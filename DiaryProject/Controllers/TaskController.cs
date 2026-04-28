@@ -72,5 +72,48 @@ namespace DiaryProject.Controllers
             _itaskService.ArchiveTask(taskId, userid);
             return RedirectToAction("Index");
         }
+
+        public IActionResult Detail (int id)
+        {
+            int userid = 1;//未連接會員資料表 先以1號會員為例
+            var taskDetail = _itaskService.GetTaskDetail(id, userid);
+            if (taskDetail == null)
+            {
+                return NotFound();
+            }
+            return View(taskDetail);
+        }
+
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            int userId = 1;
+
+            var vm = _itaskService.GetTaskEditData(id, userId);
+
+            if (vm == null)
+            {
+                return NotFound();
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(TaskEditViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+
+            int userId = 1;
+
+            _itaskService.UpdateTask(vm, userId);
+
+            return RedirectToAction("Index");
+        }
     }
 }

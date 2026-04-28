@@ -27,13 +27,16 @@
                 <td>@item.RhythmTypeText</td>
                 <td>@item.StatusText</td>
                 <td>
+                    <a asp-action="Detail" asp-route-id="@item.TaskId">查看詳情</a>
+                    <a asp-action="Edit" asp-route-id="@item.TaskId" style="margin-left:8px;">編輯</a>
+
                     @if (item.IsCompletedToday)
                     {
-                        <button type="button" disabled>今日已完成</button>
+                        <button type="button" disabled style="margin-left:8px;">今日已完成</button>
                     }
                     else
                     {
-                        <form asp-action="Checkin" method="post" style="display:inline;">
+                        <form asp-action="Checkin" method="post" style="display:inline; margin-left:8px;">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="TaskId" value="@item.TaskId" />
                             <input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
@@ -47,8 +50,6 @@
                         <input type="hidden" name="taskId" value="@item.TaskId" />
                         <button type="submit">封存</button>
                     </form>
-
-
                 </td>
             </tr>
         }

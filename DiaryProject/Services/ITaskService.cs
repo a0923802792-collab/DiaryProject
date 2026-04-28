@@ -9,5 +9,9 @@ namespace DiaryProject.Services
         bool CheckinTask(TaskCheckinViewModel vm);
 
         void ArchiveTask(int taskId, int userId);
+
+        TaskDetailViewModel GetTaskDetail(int taskId, int userId);
+        TaskEditViewModel? GetTaskEditData(int taskId, int userId);
+        void UpdateTask(TaskEditViewModel vm, int userId);
     }
 }

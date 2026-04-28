@@ -1,0 +1,20 @@
+﻿@model DiaryProject.ViewModels.TaskDetailViewModel
+
+<h2>任務詳情</h2>
+
+<div>
+    <p><strong>任務名稱：</strong>@Model.Title</p>
+    <p><strong>執行節奏：</strong>@Model.RhythmTypeText</p>
+
+    @if (Model.RhythmType != "Daily")
+    {
+        <p><strong>每週目標次數：</strong>@(Model.WeeklyTargetCount?.ToString() ?? "未設定")</p>
+    }
+
+    <p><strong>累積完成次數：</strong>@Model.TotalCheckinCount</p>
+    <p><strong>今日完成狀態：</strong>@(Model.IsCompletedToday ? "今日已完成" : "今日未完成")</p>
+</div>
+
+<p>
+    <a asp-action="Index">返回任務列表</a>
+</p>

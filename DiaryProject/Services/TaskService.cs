@@ -87,20 +87,113 @@ namespace DiaryProject.Services
 
         public void ArchiveTask(int taskId, int userId)
         {
-            var task = _context.Tasks.FirstOrDefault(x => x.TaskId == taskId && x.UserId==userId);
+            var task = _context.Tasks.FirstOrDefault(x => x.TaskId == taskId && x.UserId == userId);
             if (task == null)
             {
                 return;
             }
-            task.Status= "Archived";
-            task.UpdatedAt= DateTime.Now;
+            task.Status = "Archived";
+            task.UpdatedAt = DateTime.Now;
 
             var rule = _context.TaskScheduleRules
                 .FirstOrDefault(x => x.TaskId == taskId);
 
-            if(rule != null && rule.EndDate == null)
+            if (rule != null && rule.EndDate == null)
             {
                 rule.EndDate = DateTime.Now.Date;
+            }
+
+            _context.SaveChanges();
+        }
+
+        public TaskDetailViewModel GetTaskDetail(int taskId, int userId)
+        {
+            DateTime today = DateTime.Today;
+
+            var task = _context.Tasks
+                .FirstOrDefault(x => x.TaskId == taskId && x.UserId == userId);
+
+            if (task == null)
+            {
+                return null;
+            }
+
+            var rule = _context.TaskScheduleRules
+                .FirstOrDefault(x => x.TaskId == taskId);
+
+            var checkins = _context.TaskChecking
+                .Where(x => x.TaskId == taskId);
+
+            var vm = new TaskDetailViewModel
+            {
+                TaskId = task.TaskId,
+                Title = task.Title,
+                RhythmType = task.RhythmType,
+                RhythmTypeText = task.RhythmType == "Daily" ? "每日" : "非每日",
+                Status = task.Status,
+                StatusText = task.Status == "Active" ? "進行中" : "已封存",
+                CreatedAt = task.CreatedAt,
+                UpdatedAt = task.UpdatedAt,
+
+                WeeklyTargetCount = rule?.WeeklyTargetCount,
+                StartDate = rule?.StartDate ?? DateTime.Today,
+                EndDate = rule?.EndDate,
+
+                LastCheckinDate = checkins
+                    .OrderByDescending(x => x.CheckingDate)
+                    .Select(x => (DateTime?)x.CheckingDate)
+                    .FirstOrDefault(),
+
+                TotalCheckinCount = checkins.Count(),
+
+                IsCompletedToday = checkins.Any(x => x.CheckingDate == today)
+            };
+            return vm;
+        }
+
+        public TaskEditViewModel? GetTaskEditData(int taskId, int userId)
+        {
+            var task = _context.Tasks
+                .FirstOrDefault(x => x.TaskId == taskId && x.UserId == userId);
+
+            if (task == null)
+            {
+                return null;
+            }
+
+            var rule = _context.TaskScheduleRules
+                .FirstOrDefault(x => x.TaskId == taskId);
+
+            var vm = new TaskEditViewModel
+            {
+                TaskId = task.TaskId,
+                Title = task.Title,
+                RhythmType = task.RhythmType,
+                WeeklyTargetCount = rule?.WeeklyTargetCount
+            };
+
+            return vm;
+        }
+        public void UpdateTask(TaskEditViewModel vm, int userId)
+        {
+            var task = _context.Tasks
+                .FirstOrDefault(x => x.TaskId == vm.TaskId && x.UserId == userId);
+
+            if (task == null)
+            {
+                return;
+            }
+
+            task.Title = vm.Title;
+            task.RhythmType = vm.RhythmType;
+            task.UpdatedAt = DateTime.Now;
+
+            var rule = _context.TaskScheduleRules
+                .FirstOrDefault(x => x.TaskId == vm.TaskId);
+
+            if (rule != null)
+            {
+                rule.WeeklyTargetCount = vm.WeeklyTargetCount;
             }
 
             _context.SaveChanges();

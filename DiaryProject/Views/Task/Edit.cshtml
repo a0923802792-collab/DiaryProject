@@ -1,0 +1,37 @@
+﻿@model DiaryProject.ViewModels.TaskEditViewModel
+
+<h2>編輯任務</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
+    <input asp-for="TaskId" type="hidden" />
+
+    <div>
+        <label asp-for="Title"></label>
+        <input asp-for="Title" />
+        <span asp-validation-for="Title"></span>
+    </div>
+
+    <div>
+        <label asp-for="RhythmType"></label>
+        <select asp-for="RhythmType">
+            <option value="">請選擇</option>
+            <option value="Daily">每日</option>
+            <option value="NonDaily">非每日</option>
+        </select>
+        <span asp-validation-for="RhythmType"></span>
+    </div>
+
+    <div>
+        <label asp-for="WeeklyTargetCount"></label>
+        <input asp-for="WeeklyTargetCount" />
+        <span asp-validation-for="WeeklyTargetCount"></span>
+    </div>
+
+    <button type="submit">儲存修改</button>
+</form>
+
+<p>
+    <a asp-action="Index">返回任務列表</a>
+</p>
