@@ -1,0 +1,56 @@
+﻿@model List<DiaryProject.ViewModels.TaskListItemViewModel>
+
+<h2>我的任務</h2>
+
+@if (TempData["Msg"] != null)
+{
+    <p>@TempData["Msg"]</p>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">新增任務</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>任務名稱</th>
+            <th>執行節奏</th>
+            <th>狀態</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.RhythmTypeText</td>
+                <td>@item.StatusText</td>
+                <td>
+                    @if (item.IsCompletedToday)
+                    {
+                        <button type="button" disabled>今日已完成</button>
+                    }
+                    else
+                    {
+                        <form asp-action="Checkin" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="TaskId" value="@item.TaskId" />
+                            <input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input type="hidden" name="CheckinType" value="Complete" />
+                            <button type="submit">打卡完成</button>
+                        </form>
+                    }
+
+                    <form asp-action="Archive" method="post" style="display:inline; margin-left:8px;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="taskId" value="@item.TaskId" />
+                        <button type="submit">封存</button>
+                    </form>
+
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

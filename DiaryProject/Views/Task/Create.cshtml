@@ -1,0 +1,30 @@
+﻿@model DiaryProject.ViewModels.TaskCreateViewModel
+
+<h2>新增任務</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div>
+        <label asp-for="Title"></label>
+        <input asp-for="Title" />
+        <span asp-validation-for="Title"></span>
+    </div>
+
+    <div>
+        <label asp-for="RhythmType"></label>
+        <select asp-for="RhythmType">
+            <option value="">請選擇</option>
+            <option value="Daily">每日</option>
+            <option value="NonDaily">非每日</option>
+        </select>
+        <span asp-validation-for="RhythmType"></span>
+    </div>
+
+    <div>
+        <label asp-for="WeeklyTargetCount"></label>
+        <input asp-for="WeeklyTargetCount" />
+        <span asp-validation-for="WeeklyTargetCount"></span>
+    </div>
+
+    <button type="submit">建立任務</button>
+</form>
