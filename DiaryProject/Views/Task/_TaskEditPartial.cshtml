@@ -1,0 +1,34 @@
+﻿@model DiaryProject.ViewModels.TaskEditViewModel
+
+<form asp-action="Edit" method="post" id="editTaskForm" class="task-form">
+    @Html.AntiForgeryToken()
+
+    <input asp-for="TaskId" type="hidden" />
+
+    <label>
+        <span>小行動名稱</span>
+        <input asp-for="Title" type="text" required>
+    </label>
+
+    <fieldset class="quick-choice">
+        <legend>執行節奏</legend>
+        <label>
+            <input type="radio" name="RhythmType" value="Daily" @(Model.RhythmType == "Daily" ? "checked" : null)>
+            <span>每天</span>
+        </label>
+        <label>
+            <input type="radio" name="RhythmType" value="NonDaily" @(Model.RhythmType == "NonDaily" ? "checked" : null)>
+            <span>非每日</span>
+        </label>
+    </fieldset>
+
+    <label class="weekly-target-field @(Model.RhythmType == "NonDaily" ? "" : "hidden")" id="editWeeklyTargetField">
+        <span>每週目標次數</span>
+        <input asp-for="WeeklyTargetCount" id="editWeeklyTargetInput" type="number" min="1" max="7">
+    </label>
+
+    <footer class="modal-actions">
+        <button class="btn btn-ghost" id="cancelEditModal" type="button">取消</button>
+        <button class="btn btn-primary" type="submit">儲存修改</button>
+    </footer>
+</form>

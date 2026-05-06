@@ -36,7 +36,7 @@ namespace DiaryProject.Services
 
             return list;
         }
-        public void CreateTask(TaskCreateViewModel vm, int userId)
+        public int CreateTask(TaskCreateViewModel vm, int userId)
         {
             var task = new TaskItem
             {
@@ -47,6 +47,7 @@ namespace DiaryProject.Services
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
+
             _context.Tasks.Add(task);
             _context.SaveChanges();
 
@@ -54,11 +55,14 @@ namespace DiaryProject.Services
             {
                 TaskId = task.TaskId,
                 WeeklyTargetCount = vm.WeeklyTargetCount,
-                StartDate = DateTime.Now.Date,
+                StartDate = DateTime.Today,
                 EndDate = null
             };
+
             _context.TaskScheduleRules.Add(rule);
             _context.SaveChanges();
+
+            return task.TaskId;
         }
 
 
@@ -71,16 +75,25 @@ namespace DiaryProject.Services
             {
                 return false;
             }
+
             var checkin = new TaskChecking
             {
                 TaskId = vm.TaskId,
-                CheckingDate = vm.CheckinDate,
+                CheckingDate = vm.CheckinDate.Date,
                 CheckinAt = DateTime.Now,
                 CheckinType = vm.CheckinType
             };
 
             _context.TaskChecking.Add(checkin);
-            _context.SaveChanges();
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
 
             return true;
         }
@@ -174,14 +187,14 @@ namespace DiaryProject.Services
 
             return vm;
         }
-        public void UpdateTask(TaskEditViewModel vm, int userId)
+        public int UpdateTask(TaskEditViewModel vm, int userId)
         {
             var task = _context.Tasks
                 .FirstOrDefault(x => x.TaskId == vm.TaskId && x.UserId == userId);
 
             if (task == null)
             {
-                return;
+                return 0;
             }
 
             task.Title = vm.Title;
@@ -197,6 +210,7 @@ namespace DiaryProject.Services
             }
 
             _context.SaveChanges();
+            return task.TaskId;
         }
     }
 }

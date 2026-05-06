@@ -14,11 +14,14 @@ namespace DiaryProject.Controllers
         }
 
         //首頁
-        public IActionResult Index()
+        public IActionResult Index(int? selectedTaskId = null)
         {
-            //未連接會員資料表 先以1號會員為例
-            int userid = 1;
-            var tasks = _itaskService.GetTaskList(userid);
+            int userId = 1;
+            var tasks = _itaskService.GetTaskList(userId);
+
+            ViewBag.SelectedTaskId = selectedTaskId;
+            ViewBag.ToastMessage = TempData["ToastMessage"]?.ToString();
+
             return View(tasks);
         }
 
@@ -37,10 +40,12 @@ namespace DiaryProject.Controllers
             {
                 return View(vm);
             }
-            int userid = 1;
-            _itaskService.CreateTask(vm, userid);
 
-            return RedirectToAction("Index");
+            int userId = 1;
+            int newTaskId = _itaskService.CreateTask(vm, userId);
+
+            TempData["ToastMessage"] = "新增任務成功";
+            return RedirectToAction("Index", new { selectedTaskId = newTaskId });
         }
 
 
@@ -83,6 +88,20 @@ namespace DiaryProject.Controllers
             }
             return View(taskDetail);
         }
+        public IActionResult DetailPanel(int id)
+        {
+            int userId = 1;
+
+            var vm = _itaskService.GetTaskDetail(id, userId);
+
+            if (vm == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_TaskDetailPartial", vm);
+        }
+
 
 
         [HttpGet]
@@ -110,10 +129,24 @@ namespace DiaryProject.Controllers
             }
 
             int userId = 1;
+            int taskId = _itaskService.UpdateTask(vm, userId);
 
-            _itaskService.UpdateTask(vm, userId);
+            TempData["ToastMessage"] = "編輯任務成功";
+            return RedirectToAction("Index", new { selectedTaskId = taskId });
+        }
 
-            return RedirectToAction("Index");
+        public IActionResult EditPanel(int id)
+        {
+            int userId = 1;
+
+            var vm = _itaskService.GetTaskEditData(id, userId);
+
+            if (vm == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_TaskEditPartial", vm);
         }
     }
 }

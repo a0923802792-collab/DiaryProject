@@ -1,0 +1,89 @@
+﻿.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(34, 42, 37, .36);
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    z-index: 80;
+}
+
+    .modal-backdrop.hidden {
+        display: none;
+    }
+
+.modal {
+    width: min(560px, 100%);
+    max-height: calc(100vh - 44px);
+    overflow: auto;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--soft-shadow);
+    padding: 20px;
+}
+
+.modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+    .modal-head h3 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+.task-form {
+    display: grid;
+    gap: 13px;
+}
+
+.quick-choice {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+    .quick-choice legend {
+        grid-column: 1 / -1;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .quick-choice label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        font-weight: 700;
+    }
+
+    .quick-choice input[type="radio"] {
+        width: auto;
+        margin: 0;
+    }
+
+.weekly-target-field {
+    display: grid;
+}
+
+.hidden {
+    display: none;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}

@@ -1,57 +1,215 @@
 ﻿@model List<DiaryProject.ViewModels.TaskListItemViewModel>
 
-<h2>我的任務</h2>
+@{
+    ViewData["Title"] = "行動中心";
 
-@if (TempData["Msg"] != null)
-{
-    <p>@TempData["Msg"]</p>
+    var dailyTasks = Model?.Where(x => x.RhythmType == "Daily").ToList()
+                     ?? new List<DiaryProject.ViewModels.TaskListItemViewModel>();
+
+    var nonDailyTasks = Model?.Where(x => x.RhythmType != "Daily").ToList()
+                        ?? new List<DiaryProject.ViewModels.TaskListItemViewModel>();
 }
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">新增任務</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>任務名稱</th>
-            <th>執行節奏</th>
-            <th>狀態</th>
-            <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Title</td>
-                <td>@item.RhythmTypeText</td>
-                <td>@item.StatusText</td>
-                <td>
-                    <a asp-action="Detail" asp-route-id="@item.TaskId">查看詳情</a>
-                    <a asp-action="Edit" asp-route-id="@item.TaskId" style="margin-left:8px;">編輯</a>
+@section Styles {
+    <link rel="stylesheet" href="~/css/task_page.css" />
+}
 
-                    @if (item.IsCompletedToday)
-                    {
-                        <button type="button" disabled style="margin-left:8px;">今日已完成</button>
-                    }
-                    else
-                    {
-                        <form asp-action="Checkin" method="post" style="display:inline; margin-left:8px;">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="TaskId" value="@item.TaskId" />
-                            <input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                            <input type="hidden" name="CheckinType" value="Complete" />
-                            <button type="submit">打卡完成</button>
-                        </form>
-                    }
+<header class="page-header">
+    <div>
+        <p class="eyebrow">Action Center</p>
+        <h2>行動中心</h2>
+        <p>把今天最適合開始的一步放在前面，讓任務成為照顧自己的節奏，而不是壓力清單。</p>
+    </div>
+</header>
 
-                    <form asp-action="Archive" method="post" style="display:inline; margin-left:8px;">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="taskId" value="@item.TaskId" />
-                        <button type="submit">封存</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<section class="content-shell">
+    <section class="list-panel" aria-label="小行動清單">
+        <div class="rhythm-head">
+            <div>
+                <p class="eyebrow">My Rhythm</p>
+                <h3>我的任務</h3>
+                <p>先把目前可執行的任務正常顯示出來。</p>
+            </div>
+
+            <button class="btn btn-primary add-task-inline" id="openCreateBtn" type="button">＋ 加入一個小行動</button>
+        </div>
+
+        <div class="tabs-row">
+            <button type="button" class="tab-btn active" data-tab="daily">每日節奏</button>
+            <button type="button" class="tab-btn" data-tab="nondaily">非每日累積</button>
+        </div>
+
+        <div class="tab-panel active" id="dailyPanel">
+            <div class="task-grid task-grid-nondaily">
+                @if (!dailyTasks.Any())
+                {
+                    <p>目前沒有每日節奏任務。</p>
+                }
+                else
+                {
+                    @foreach (var item in dailyTasks)
+                    {
+                        <article class="task-card task-card-clickable" data-task-id="@item.TaskId">
+                            <h4>@item.Title</h4>
+                            <p>節奏：@item.RhythmTypeText</p>
+                            <p>@(item.IsCompletedToday ? "今天已紀錄。" : "今天尚未紀錄。")</p>
+
+                            <div class="card-actions">
+                                @if (item.IsCompletedToday)
+                                {
+                                    <button type="button" disabled>今天已紀錄</button>
+                                }
+                                else
+                                {
+                                    <form asp-action="Checkin" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="TaskId" value="@item.TaskId" />
+                                        <input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                        <input type="hidden" name="CheckinType" value="Complete" />
+                                        <button type="submit">完成這一步</button>
+                                    </form>
+                                }
+                            </div>
+                        </article>
+                    }
+                }
+            </div>
+        </div>
+        </div>
+
+        <div class="tab-panel" id="nonDailyPanel">
+            <div class="task-grid task-grid-nondaily">
+                @if (!nonDailyTasks.Any())
+                {
+                    <p>目前沒有非每日累積任務。</p>
+                }
+                else
+                {
+                    @foreach (var item in nonDailyTasks)
+                    {
+                        <article class="task-card task-card-clickable" data-task-id="@item.TaskId">
+                            <h4>@item.Title</h4>
+                            <p>節奏：@item.RhythmTypeText</p>
+                            <p>@(item.IsCompletedToday ? "今天已記下。" : "今天尚未記錄。")</p>
+
+                            <div class="card-actions">
+                                @if (item.IsCompletedToday)
+                                {
+                                    <button type="button" disabled>今天已記錄</button>
+                                }
+                                else
+                                {
+                                    <form asp-action="Checkin" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="TaskId" value="@item.TaskId" />
+                                        <input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                        <input type="hidden" name="CheckinType" value="Complete" />
+                                        <button type="submit">記錄一次</button>
+                                    </form>
+                                }
+                            </div>
+                        </article>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+
+    <aside class="detail-panel" aria-label="目前專注的任務">
+        <div class="panel-head small">
+            <div>
+                <h3>目前專注的任務</h3>
+                <p>點左側任務卡，這裡會顯示詳細資訊。</p>
+            </div>
+        </div>
+
+        <div class="detail-body" id="detailBody">
+            <p class="detail-muted">請先點一張任務卡。</p>
+        </div>
+    </aside>
+</section>
+
+<div class="modal-backdrop hidden" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <section class="modal">
+        <header class="modal-head">
+            <div>
+                <p class="eyebrow">Small Step</p>
+                <h3 id="taskModalTitle">加入一個小行動</h3>
+            </div>
+            <button class="icon-btn" id="closeTaskModal" type="button" aria-label="關閉">×</button>
+        </header>
+
+        <form asp-action="Create" method="post" id="taskForm" class="task-form">
+            @Html.AntiForgeryToken()
+
+            <label>
+                <span>小行動名稱</span>
+                <input name="Title" type="text" placeholder="例如：睡前放鬆 15 分鐘" required>
+            </label>
+
+            <fieldset class="quick-choice">
+                <legend>執行節奏</legend>
+                <label>
+                    <input type="radio" name="RhythmType" value="Daily" checked>
+                    <span>每天</span>
+                </label>
+                <label>
+                    <input type="radio" name="RhythmType" value="NonDaily">
+                    <span>非每日</span>
+                </label>
+            </fieldset>
+
+            <label class="weekly-target-field hidden" id="weeklyTargetField">
+                <span>每週目標次數</span>
+                <input name="WeeklyTargetCount" id="weeklyTargetInput" type="number" min="1" max="7">
+            </label>
+
+            <footer class="modal-actions">
+                <button class="btn btn-ghost" id="cancelTaskModal" type="button">取消</button>
+                <button class="btn btn-primary" type="submit">儲存這一步</button>
+            </footer>
+        </form>
+    </section>
+</div>
+
+<div class="modal-backdrop hidden" id="editModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <section class="modal">
+        <header class="modal-head">
+            <div>
+                <p class="eyebrow">Edit Task</p>
+                <h3 id="editModalTitle">編輯任務</h3>
+            </div>
+            <button class="icon-btn" id="closeEditModal" type="button" aria-label="關閉">×</button>
+        </header>
+
+        <div id="editModalBody">
+            <p class="detail-muted">載入中...</p>
+        </div>
+    </section>
+</div>
+
+<div class="modal-backdrop hidden" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <section class="modal compact">
+        <header class="modal-head">
+            <div>
+                <p class="eyebrow">Delete</p>
+                <h3 id="deleteTitle">移除任務</h3>
+            </div>
+            <button class="icon-btn" id="closeDeleteModal" type="button" aria-label="關閉">×</button>
+        </header>
+
+        <p id="deleteText" class="detail-muted"></p>
+
+        <form asp-action="Archive" method="post" id="deleteForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="taskId" id="deleteTaskId" />
+
+            <footer class="modal-actions">
+                <button class="btn btn-ghost" id="cancelDeleteModal" type="button">取消</button>
+                <button class="btn btn-danger" type="submit">確認刪除</button>
+            </footer>
+        </form>
+    </section>
+</div>
+
+<script src="~/js/TaskPage.js"></script>

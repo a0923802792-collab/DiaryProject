@@ -1,0 +1,116 @@
+﻿:root {
+    --bg: #f1f5f0;
+    --surface: #fbfcfa;
+    --surface-soft: #e8eee7;
+    --line: #dfe7df;
+    --text: #203331;
+    --muted: #697970;
+    --quiet: #9aa59f;
+    --primary: #355f4c;
+    --primary-dark: #254736;
+    --danger: #b9504d;
+    --radius: 20px;
+    --soft-shadow: 0 12px 28px rgba(31, 52, 47, .055);
+    font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background: linear-gradient(180deg, rgba(245, 248, 244, .95), rgba(235, 241, 235, .98)), var(--bg);
+}
+
+
+
+.sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 248px;
+    padding: 30px 20px;
+    background: rgba(251, 252, 250, .78);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    z-index: 10;
+}
+
+.brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: var(--surface-soft);
+    color: var(--primary-dark);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+}
+
+.brand h1,
+.brand p {
+    margin: 0;
+}
+
+.brand h1 {
+    font-size: 18px;
+}
+
+.brand p {
+    color: var(--muted);
+}
+
+.side-nav {
+    display: grid;
+    gap: 6px;
+}
+
+    .side-nav button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        text-align: left;
+        padding: 11px 13px;
+        border-radius: 14px;
+    }
+
+        .side-nav button:hover,
+        .side-nav .active {
+            color: var(--text);
+            background: var(--surface-soft);
+        }
+
+.side-note {
+    margin-top: auto;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .68);
+}
+
+    .side-note strong,
+    .side-note p {
+        display: block;
+    }
+
+    .side-note p {
+        margin: 8px 0 0;
+        line-height: 1.6;
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+.main {
+    margin-left: 248px;
+    padding: 38px 28px 64px;
+    display: flex;
+    flex-direction: column;
+}

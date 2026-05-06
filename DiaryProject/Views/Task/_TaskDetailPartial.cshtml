@@ -1,0 +1,38 @@
+﻿@model DiaryProject.ViewModels.TaskDetailViewModel
+
+<section class="detail-section">
+    <h4>@Model.Title</h4>
+    <p class="detail-muted">執行節奏：@Model.RhythmTypeText</p>
+</section>
+
+<section class="detail-section">
+    @if (Model.RhythmType != "Daily")
+    {
+        <div class="detail-row">
+            <span>每週目標</span>
+            <strong>@(Model.WeeklyTargetCount?.ToString() ?? "未設定")</strong>
+        </div>
+    }
+
+    <div class="detail-row">
+        <span>累積完成</span>
+        <strong>@Model.TotalCheckinCount 次</strong>
+    </div>
+
+    <div class="detail-row">
+        <span>今日狀態</span>
+        <strong>@(Model.IsCompletedToday ? "今日已完成" : "今日未完成")</strong>
+    </div>
+</section>
+
+<section class="detail-section">
+    <div class="card-actions">
+        <button type="button" class="btn btn-ghost open-edit-btn" data-task-id="@Model.TaskId">編輯</button>
+        <button type="button" class="btn btn-danger open-delete-btn" data-task-id="@Model.TaskId" data-task-title="@Model.Title">刪除</button>
+    </div>
+    <form asp-action="Archive" method="post" style="display:inline;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="taskId" value="@Model.TaskId" />
+
+    </form>
+</section>
