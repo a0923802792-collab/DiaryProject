@@ -1,0 +1,248 @@
+﻿@model DiaryProject.ViewModels.Review.ReviewTimePageViewModel
+
+@{
+    ViewData["Title"] = "時間回顧";
+
+    var today = DateTime.Today;
+    var currentYear = today.Year;
+    var currentMonth = today.Month;
+    var minYear = currentYear - 100;
+
+    var currentMonthDate = new DateTime(Model.Year, Model.Month, 1);
+    var minMonthDate = new DateTime(minYear, 1, 1);
+    var maxMonthDate = new DateTime(currentYear, currentMonth, 1);
+
+    var prevMonthDate = currentMonthDate.AddMonths(-1);
+    var nextMonthDate = currentMonthDate.AddMonths(1);
+
+    var canGoPrev = prevMonthDate >= minMonthDate;
+    var canGoNext = nextMonthDate <= maxMonthDate;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/review_page.css" asp-append-version="true" />
+}
+
+<div class="review-page">
+    <header class="review-hero">
+        <p class="eyebrow">Review</p>
+        <h1>時間回顧</h1>
+        <p>@Model.Year 年 @Model.Month 月｜從日期回到那一天，先看摘要，再決定要不要深入。</p>
+
+        <div class="review-tab-row">
+            <a class="btn btn-primary" asp-controller="Review" asp-action="Time">時間回顧</a>
+            <a class="btn btn-ghost" asp-controller="Review" asp-action="Photos">照片回顧</a>
+        </div>
+    </header>
+
+    <section class="review-time-grid">
+        <div class="review-card review-calendar-panel">
+            <div class="review-section-title review-calendar-title-row">
+                <div>
+                    <h2>月曆資料</h2>
+                    <p>點選日期後，右側會顯示當日摘要。</p>
+                </div>
+
+                <div class="review-calendar-controls">
+                    <form asp-controller="Review"
+                          asp-action="Time"
+                          method="get"
+                          id="reviewYearForm"
+                          class="review-year-form"
+                          data-current-year="@currentYear"
+                          data-current-month="@currentMonth">
+                        <select name="year" id="reviewYearSelect" aria-label="選擇年份">
+                            @for (var y = currentYear; y >= minYear; y--)
+                            {
+                                if (Model.Year == y)
+                                {
+                                    <option value="@y" selected>@y</option>
+                                }
+                                else
+                                {
+                                    <option value="@y">@y</option>
+                                }
+                            }
+                        </select>
+
+                        <input type="hidden" name="month" id="reviewYearMonthInput" value="@Model.Month" />
+                    </form>
+
+                    <div class="review-month-switcher">
+                        @if (canGoPrev)
+                        {
+                            <a class="icon-btn"
+                                   asp-controller="Review"
+                                   asp-action="Time"
+                                   asp-route-year="@prevMonthDate.Year"
+                                   asp-route-month="@prevMonthDate.Month"
+                                   aria-label="上一個月">
+                                ‹
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button" class="icon-btn" disabled>‹</button>
+                        }
+
+                        <span class="review-current-month">@Model.Month 月</span>
+
+                        @if (canGoNext)
+                        {
+                            <a class="icon-btn"
+                                   asp-controller="Review"
+                                   asp-action="Time"
+                                   asp-route-year="@nextMonthDate.Year"
+                                   asp-route-month="@nextMonthDate.Month"
+                                   aria-label="下一個月">
+                                ›
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button" class="icon-btn" disabled>›</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (!Model.CalendarDays.Any())
+            {
+                <div class="review-empty">
+                    這個月份目前沒有日曆資料。
+                </div>
+            }
+            else
+            {
+                <div class="review-calendar-weekdays">
+                    <span>日</span>
+                    <span>一</span>
+                    <span>二</span>
+                    <span>三</span>
+                    <span>四</span>
+                    <span>五</span>
+                    <span>六</span>
+                </div>
+
+                <div class="review-calendar-grid">
+                    @foreach (var day in Model.CalendarDays)
+                    {
+                        var cellClass = "";
+
+                        if (!day.IsCurrentMonth)
+                        {
+                            cellClass += " is-outside-month";
+                        }
+
+                        if (day.IsFuture)
+                        {
+                            cellClass += " is-future";
+                        }
+
+                        if (day.HasDiary)
+                        {
+                            cellClass += " has-diary";
+                        }
+                        else
+                        {
+                            cellClass += " no-diary";
+                        }
+
+                        if (day.IsSelected)
+                        {
+                            cellClass += " is-selected";
+                        }
+
+                        if (day.IsFuture)
+                        {
+                            <div class="review-calendar-cell @cellClass">
+                                <span class="day-number">@day.DayNumber</span>
+                                <span class="day-info">
+                                    <span>尚未到達</span>
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="review-calendar-cell @cellClass"
+                                    data-select-date="@day.DateValue">
+                                <span class="day-number">@day.DayNumber</span>
+
+                                <span class="day-info">
+                                    @if (day.HasDiary)
+                                    {
+                                        @if (!string.IsNullOrEmpty(day.MainMoodName))
+                                        {
+                                            <span>@day.MainMoodEmoji @day.MainMoodName</span>
+                                        }
+
+                                        @if (day.HasPhoto)
+                                        {
+                                            <span>📷 有照片</span>
+                                        }
+
+                                        @if (day.DiaryCount > 1)
+                                        {
+                                            <span>@day.DiaryCount 筆日記</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>無日記</span>
+                                    }
+                                </span>
+                            </button>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <aside class="review-card review-selected-panel">
+            <div class="review-section-title">
+                <div>
+                    <h2>當日摘要</h2>
+                    <p>目前選中的一天。</p>
+                </div>
+            </div>
+
+            <div id="selectedDaySummary">
+                <partial name="Partials/_DaySummary" model="Model.SelectedDayPanel" />
+            </div>
+        </aside>
+    </section>
+</div>
+
+<div id="reviewModalBackdrop" class="modal-backdrop hidden">
+    <div class="modal">
+        <div id="reviewModalContent"></div>
+    </div>
+</div>
+<div id="reviewConfirmBackdrop" class="modal-backdrop review-confirm-backdrop hidden">
+    <div class="modal compact">
+        <div class="modal-head">
+            <div>
+                <p class="eyebrow">Confirm</p>
+                <h3>前往日記詳情</h3>
+            </div>
+
+            <button type="button" class="icon-btn" data-close-review-confirm>×</button>
+        </div>
+
+        <p id="reviewConfirmText">是否前往被選中的日記？</p>
+
+        <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-close-review-confirm>
+                取消
+            </button>
+
+            <a id="reviewConfirmGoLink" class="btn btn-primary" href="#">
+                確認前往
+            </a>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/review/review_time.js" asp-append-version="true"></script>
+}

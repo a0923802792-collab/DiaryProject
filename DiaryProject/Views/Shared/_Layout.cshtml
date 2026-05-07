@@ -12,33 +12,41 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <aside class="sidebar" aria-label="主選單">
-        <div class="brand">
-            <div class="brand-mark">ED</div>
-            <div>
-                <h1>情緒日記</h1>
-                <p>Diary + Task</p>
+    <header class="topbar">
+        <a asp-controller="Home" asp-action="Index" class="topbar-logo">Moody</a>
+
+        <div class="topbar-search-wrap">
+            <div class="search-box">
+                <span class="search-icon">⌕</span>
+                <input class="search-input" type="text" placeholder="Search my journal" />
             </div>
         </div>
 
-        <nav class="side-nav">
-            <a asp-controller="Home" asp-action="Index">首頁</a>
-            <button type="button">日記頁</button>
-            <a asp-controller="Task" asp-action="Index">任務</a>
-            <button type="button">月曆回顧</button>
-            <button type="button">分析頁</button>
-            <button type="button">分享牆</button>
-            <button type="button">個人頁</button>
-        </nav>
-
-        <div class="side-note">
-            <strong>今天不用全做完</strong>
-            <p>先回到一個小行動，剩下的可以慢慢接上。</p>
+        <div class="topbar-actions">
+            <button type="button" class="action-btn" aria-label="通知">🔔</button>
+            <button type="button" class="action-btn" aria-label="個人資料">👤</button>
         </div>
-    </aside>
+    </header>
 
-    <main class="main">
-        @RenderBody()
-    </main>
+    <div class="layout-container">
+        <aside class="sidenav-wrapper" aria-label="主選單">
+            <nav class="sidenav-box">
+                <a asp-controller="Home" asp-action="Index" class="nav-link">首頁</a>
+                <a asp-controller="Review" asp-action="Time" class="nav-link">回顧</a>
+                <a asp-controller="Task" asp-action="Index" class="nav-link">任務</a>
+                <button type="button" class="nav-link">月</button>
+                <button type="button" class="nav-link">分</button>
+                <button type="button" class="nav-link">享</button>
+            </nav>
+
+            <button type="button" class="giftwall-btn">★</button>
+        </aside>
+
+        <main class="page-shell">
+            @RenderBody()
+        </main>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

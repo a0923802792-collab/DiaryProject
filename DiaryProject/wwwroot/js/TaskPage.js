@@ -1,6 +1,7 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
     const createModal = document.getElementById("taskModal");
     const openCreateBtn = document.getElementById("openCreateBtn");
+    const openCreateBtnFallback = document.getElementById("openCreateBtnFallback");
     const closeCreateBtn = document.getElementById("closeTaskModal");
     const cancelCreateBtn = document.getElementById("cancelTaskModal");
     const weeklyField = document.getElementById("weeklyTargetField");
@@ -240,6 +241,10 @@
 
     if (openCreateBtn) {
         openCreateBtn.addEventListener("click", openCreateModal);
+    }
+
+    if (openCreateBtnFallback) {
+        openCreateBtnFallback.addEventListener("click", openCreateModal);
     }
 
     if (closeCreateBtn) {

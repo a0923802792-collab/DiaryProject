@@ -10,40 +10,53 @@ button {
 }
 
 .eyebrow {
-    margin: 0 0 5px;
+    margin: 0 0 0.4rem 0;
     font-size: 12px;
-    color: var(--primary);
+    color: rgba(120, 108, 86, 0.6);
     font-weight: 800;
     text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .btn {
-    border: 1px solid transparent;
-    border-radius: 999px;
-    padding: 11px 22px;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
     min-height: 42px;
     font-weight: 700;
+    transition: all 0.3s;
 }
 
 .btn-primary {
-    background: var(--primary);
-    color: #fff;
+    background: var(--mo-olive);
+    color: white;
 }
 
     .btn-primary:hover {
-        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--soft-shadow);
     }
 
 .btn-ghost {
-    background: #fff;
-    color: var(--text);
-    border-color: var(--line);
+    background: white;
+    color: var(--mo-brown);
+    border-color: var(--mo-black);
 }
 
+    .btn-ghost:hover {
+        background: var(--mo-cream);
+    }
+
 .btn-danger {
-    color: #fff;
-    background: var(--danger);
+    color: white;
+    background: var(--mo-brown);
+    border-color: var(--mo-black);
 }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--soft-shadow);
+    }
 
 .btn:disabled,
 .btn[disabled] {
@@ -51,25 +64,34 @@ button {
     opacity: .78;
 }
 
+.action-btn,
 .icon-btn {
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    width: 34px;
-    height: 34px;
-    border-radius: var(--radius);
-    font-size: 22px;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    background-color: white;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    box-shadow: var(--soft-shadow);
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    font-size: 18px;
 }
 
+    .action-btn:hover,
     .icon-btn:hover {
-        background: var(--surface-soft);
-        color: var(--text);
+        color: var(--mo-olive);
+        transform: scale(1.05);
     }
 
 label {
     display: grid;
-    gap: 7px;
-    color: var(--text);
+    gap: 0.45rem;
+    color: var(--mo-black);
     font-weight: 800;
 }
 
@@ -81,13 +103,22 @@ input,
 select,
 textarea {
     width: 100%;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 10px 11px;
-    background: #fff;
-    color: var(--text);
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    padding: 0.75rem 1rem;
+    background: white;
+    color: var(--mo-black);
 }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--mo-azure);
+        box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.2);
+    }
 
 textarea {
     resize: vertical;
+    border-radius: 1.25rem;
 }

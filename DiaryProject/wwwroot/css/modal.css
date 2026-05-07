@@ -1,11 +1,11 @@
 ﻿.modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(34, 42, 37, .36);
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
     display: grid;
     place-items: center;
     padding: 22px;
-    z-index: 80;
 }
 
     .modal-backdrop.hidden {
@@ -16,11 +16,17 @@
     width: min(560px, 100%);
     max-height: calc(100vh - 44px);
     overflow: auto;
-    background: var(--surface);
-    border-radius: var(--radius);
-    box-shadow: var(--soft-shadow);
-    padding: 20px;
+    background-color: var(--mo-cream);
+    border: 1px solid var(--mo-black);
+    border-radius: 2rem;
+    padding: 2rem;
+    box-shadow: 8px 8px 0 var(--mo-black);
+    position: relative;
 }
+
+    .modal.compact {
+        width: min(420px, 100%);
+    }
 
 .modal-head {
     display: flex;
@@ -32,6 +38,8 @@
 
     .modal-head h3 {
         margin: 0;
+        font-family: var(--font-serif);
+        color: var(--mo-black);
         font-size: 24px;
     }
 
@@ -54,7 +62,7 @@
         margin-bottom: 6px;
         font-size: 13px;
         font-weight: 800;
-        color: var(--text);
+        color: var(--mo-black);
     }
 
     .quick-choice label {
@@ -62,9 +70,9 @@
         align-items: center;
         gap: 8px;
         padding: 12px 14px;
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        background: #fff;
+        border: 1px solid var(--mo-black);
+        border-radius: 9999px;
+        background: white;
         font-weight: 700;
     }
 
@@ -83,7 +91,31 @@
 
 .modal-actions {
     display: flex;
+    gap: 1rem;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 8px;
+    margin-top: 1rem;
+}
+
+.closeTaskModal {
+    background-color: var(--mo-olive);
+    color: white;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .closeTaskModal:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--soft-shadow);
+    }
+
+.btn-cancel {
+    background-color: white;
+    color: var(--mo-brown);
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
 }

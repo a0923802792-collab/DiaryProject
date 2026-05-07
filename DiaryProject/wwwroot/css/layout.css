@@ -1,116 +1,225 @@
-﻿:root {
-    --bg: #f1f5f0;
-    --surface: #fbfcfa;
-    --surface-soft: #e8eee7;
-    --line: #dfe7df;
-    --text: #203331;
-    --muted: #697970;
-    --quiet: #9aa59f;
-    --primary: #355f4c;
-    --primary-dark: #254736;
-    --danger: #b9504d;
-    --radius: 20px;
-    --soft-shadow: 0 12px 28px rgba(31, 52, 47, .055);
-    font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+﻿/* ============================================================
+   1. 主題色票與基礎設定
+   ============================================================ */
+:root {
+    --mo-cream: #FBF9EA;
+    --mo-cream-80: rgba(251, 249, 234, 0.8);
+    --mo-olive: #A1A34E;
+    --mo-black: #000000;
+    --mo-brown: #786C56;
+    --mo-azure: #007FFF;
+    --mo-citron: #D4E2A5;
+    --color-bg-space: var(--mo-cream);
+    --color-text-main: var(--mo-black);
+    --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-sans: system-ui, -apple-system, sans-serif;
+    --line: rgba(0, 0, 0, 0.12);
+    --soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --radius-xl: 2rem;
+    --radius-pill: 9999px;
 }
 
 * {
     box-sizing: border-box;
 }
+html {
+    height: 100%;
+    min-height: 100%;
+}
 
 body {
-    margin: 0;
+    height: 100vh;
     min-height: 100vh;
-    color: var(--text);
-    background: linear-gradient(180deg, rgba(245, 248, 244, .95), rgba(235, 241, 235, .98)), var(--bg);
-}
-
-
-
-.sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    width: 248px;
-    padding: 30px 20px;
-    background: rgba(251, 252, 250, .78);
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    z-index: 10;
-}
-
-.brand {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.brand-mark {
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
-    background: var(--surface-soft);
-    color: var(--primary-dark);
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-}
-
-.brand h1,
-.brand p {
+    overflow: hidden;
     margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-text-main);
+    background-color: var(--color-bg-space);
+    transition: background-color 0.3s;
+    background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+a {
+    color: inherit;
+    text-decoration: none;
 }
 
-.brand h1 {
-    font-size: 18px;
+/* ============================================================
+   2. TopBar
+   ============================================================ */
+.topbar {
+    position: relative;
+    z-index: 45;
+    background-color: var(--mo-olive);
+    border-bottom: 1px solid var(--mo-black);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+    gap: 1rem;
 }
 
-.brand p {
-    color: var(--muted);
+.topbar-logo {
+    font-size: 30px;
+    color: var(--mo-black);
+    font-weight: bold;
+    font-family: var(--font-serif);
+    cursor: pointer;
+    transition: color 0.3s;
+    flex: 0 0 auto;
 }
 
-.side-nav {
-    display: grid;
-    gap: 6px;
-}
-
-    .side-nav button {
-        border: 0;
-        background: transparent;
-        color: var(--muted);
-        text-align: left;
-        padding: 11px 13px;
-        border-radius: 14px;
+    .topbar-logo:hover {
+        color: var(--mo-citron);
     }
 
-        .side-nav button:hover,
-        .side-nav .active {
-            color: var(--text);
-            background: var(--surface-soft);
-        }
-
-.side-note {
-    margin-top: auto;
-    padding: 16px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, .68);
+.topbar-search-wrap {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
 }
 
-    .side-note strong,
-    .side-note p {
-        display: block;
+.search-box {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 1px solid var(--mo-black);
+    border-radius: var(--radius-pill);
+    padding: 0.5rem 1.25rem;
+    width: min(700px, 100%);
+    height: 50px;
+    box-shadow: var(--soft-shadow);
+    transition: all 0.3s;
+}
+
+    .search-box:focus-within {
+        border-color: var(--mo-azure);
+        box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.2);
     }
 
-    .side-note p {
-        margin: 8px 0 0;
-        line-height: 1.6;
-        font-size: 13px;
-        color: var(--muted);
+.search-icon {
+    color: #9ca3af;
+    font-size: 16px;
+    flex: 0 0 auto;
+}
+
+.search-input {
+    margin-left: 0.75rem;
+    outline: none;
+    width: 100%;
+    font-size: 0.875rem;
+    background: transparent;
+    color: #374151;
+    border: none;
+}
+
+    .search-input::placeholder {
+        color: #9ca3af;
     }
 
-.main {
-    margin-left: 248px;
-    padding: 38px 28px 64px;
+.topbar-actions {
+    display: flex;
+    gap: 1rem;
+    flex: 0 0 auto;
+}
+
+/* ============================================================
+   3. 主版面
+   ============================================================ */
+.layout-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    gap: 1rem;
+    padding: 0 2rem 2rem 2rem;
+    overflow: hidden;
+}
+
+.sidenav-wrapper {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    flex-shrink: 0;
+}
+
+.sidenav-box {
+    width: 4rem;
+    background-color: var(--mo-cream);
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0;
+    gap: 1.5rem;
+    box-shadow: var(--soft-shadow);
+    border: 1px solid var(--mo-black);
+}
+
+.nav-link {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    color: #9ca3af;
+    text-decoration: none;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-weight: 700;
+}
+
+    .nav-link:hover {
+        background-color: var(--mo-olive);
+        transform: scale(1.1) translateY(-0.25rem);
+        color: var(--mo-brown);
+    }
+
+    .nav-link.active,
+    .nav-link[aria-current="page"] {
+        background-color: var(--mo-olive);
+        color: #3d5a10;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+.giftwall-btn {
+    margin-top: auto;
+    width: 4rem;
+    height: 4rem;
+    background-color: var(--mo-brown);
+    color: white;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    box-shadow: var(--soft-shadow);
+    font-size: 1.25rem;
+}
+
+    .giftwall-btn:hover {
+        background-color: #FFFFFF;
+        transform: scale(1.1) translateY(-0.25rem);
+        color: var(--mo-brown);
+    }
+
+.page-shell {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.25rem;
 }

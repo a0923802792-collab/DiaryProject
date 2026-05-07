@@ -30,9 +30,4 @@
         <button type="button" class="btn btn-ghost open-edit-btn" data-task-id="@Model.TaskId">編輯</button>
         <button type="button" class="btn btn-danger open-delete-btn" data-task-id="@Model.TaskId" data-task-title="@Model.Title">刪除</button>
     </div>
-    <form asp-action="Archive" method="post" style="display:inline;">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="taskId" value="@Model.TaskId" />
-
-    </form>
 </section>

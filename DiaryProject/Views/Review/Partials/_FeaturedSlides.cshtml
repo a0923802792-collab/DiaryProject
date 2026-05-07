@@ -1,0 +1,79 @@
+﻿@model List<DiaryProject.ViewModels.Review.ReviewPhotoItemViewModel>
+
+<div class="review-slideshow">
+    <button type="button" class="slide-close-btn" data-close-review-modal>×</button>
+
+    @if (!Model.Any())
+    {
+        <div class="review-slide-empty">
+            <p class="eyebrow">Featured Review</p>
+            <h3>目前沒有精選片段</h3>
+            <p>之後有符合條件的照片，會在這裡以幻燈片方式呈現。</p>
+        </div>
+    }
+    else
+    {
+        <button type="button" class="slide-arrow slide-arrow-prev" data-featured-prev aria-label="上一張">
+            ‹
+        </button>
+
+        <button type="button" class="slide-arrow slide-arrow-next" data-featured-next aria-label="下一張">
+            ›
+        </button>
+
+        <div class="review-slide-stage" data-featured-slide-root>
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                var photo = Model[i];
+                var diaryDateText = photo.DiaryDate.ToString("M月d日");
+
+                <article data-featured-slide class="review-featured-slide @(i == 0 ? "is-active" : "")">
+                    <img src="@photo.FileUrl" alt="精選照片" />
+
+                    <div class="review-slide-caption">
+                        <p class="eyebrow">Featured Review</p>
+
+                        <h3>@photo.FullDateText</h3>
+
+                        <div class="review-meta-list">
+                            @if (!string.IsNullOrEmpty(photo.MainMoodName))
+                            {
+                                <span class="review-chip">@photo.MainMoodEmoji @photo.MainMoodName</span>
+                            }
+
+                            <span class="review-chip">值得再看一次</span>
+                        </div>
+
+                        <p>@photo.PreviewText</p>
+
+                        <div class="modal-actions">
+                            <a class="btn btn-primary"
+                                   asp-controller="Review"
+                                   asp-action="Time"
+                                   asp-route-year="@photo.DiaryDate.Year"
+                                   asp-route-month="@photo.DiaryDate.Month"
+                                   asp-route-selectedDiaryId="@photo.DiaryId">
+                                回到這天
+                            </a>
+
+                            <a class="btn btn-ghost"
+                                   asp-controller="Diary"
+                                   asp-action="Detail"
+                                   asp-route-id="@photo.DiaryId"
+                                   data-confirm-diary-link
+                                   data-confirm-diary-date="@diaryDateText">
+                                前往日記詳情
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <div class="review-slide-counter">
+            <span data-featured-current>1</span>
+            /
+            <span>@Model.Count</span>
+        </div>
+    }
+</div>

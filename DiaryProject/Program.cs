@@ -1,6 +1,8 @@
 using DiaryProject.Data;
-using Microsoft.EntityFrameworkCore;
 using DiaryProject.Services;
+using DiaryProject.Services.Review;
+using Microsoft.EntityFrameworkCore;
+using DiaryProject.Services.Review;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +11,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<ITaskService, TaskService>();
-
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactFront", policy =>
@@ -43,7 +45,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Review}/{action=Time}/{id?}")
     .WithStaticAssets();
 
 app.MapControllers();

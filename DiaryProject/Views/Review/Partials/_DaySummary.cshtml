@@ -1,0 +1,59 @@
+﻿@model DiaryProject.ViewModels.Review.ReviewDaySummaryPanelViewModel
+
+@if (Model.IsFuture)
+{
+    <article class="review-day-empty is-future">
+        <h3>@Model.DateText</h3>
+        <p>這一天尚未到達，暫時不能回顧。</p>
+    </article>
+}
+else if (!Model.HasDiary || Model.Diary == null)
+{
+    <article class="review-day-empty no-diary">
+        <h3>@Model.DateText</h3>
+        <p>當天無日記。</p>
+        <p>這裡先保留空白狀態，之後若新增日記，會顯示當日摘要。</p>
+    </article>
+}
+else
+{
+    var diaryDateText = Model.Diary.DiaryDate.ToString("M月d日");
+
+    <article>
+        <h3>@Model.Diary.DateText</h3>
+
+        @if (!string.IsNullOrEmpty(Model.Diary.Title))
+        {
+            <h4>@Model.Diary.Title</h4>
+        }
+
+        <p>@Model.Diary.PreviewText</p>
+
+        <div class="review-meta-list">
+            @if (!string.IsNullOrEmpty(Model.Diary.MainMoodName))
+            {
+                <span class="review-chip">@Model.Diary.MainMoodEmoji @Model.Diary.MainMoodName</span>
+            }
+
+            <span class="review-chip">能量 @(Model.Diary.EnergyValue?.ToString() ?? "-")</span>
+            <span class="review-chip">壓力 @(Model.Diary.StressValue?.ToString() ?? "-")</span>
+            <span class="review-chip">睡眠 @(Model.Diary.SleepValue?.ToString() ?? "-")</span>
+        </div>
+
+        @if (Model.Diary.Tags.Any())
+        {
+            <p>標籤：@string.Join("、", Model.Diary.Tags)</p>
+        }
+
+        <div class="modal-actions">
+            <a class="btn btn-primary"
+                   asp-controller="Diary"
+                   asp-action="Detail"
+                   asp-route-id="@Model.Diary.DiaryId"
+                   data-confirm-diary-link
+                   data-confirm-diary-date="@diaryDateText">
+                前往日記詳情
+            </a>
+        </div>
+    </article>
+}

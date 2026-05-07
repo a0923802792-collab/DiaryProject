@@ -17,7 +17,16 @@ namespace DiaryProject.Controllers
         public IActionResult Index(int? selectedTaskId = null)
         {
             int userId = 1;
-            var tasks = _itaskService.GetTaskList(userId);
+            List<TaskListItemViewModel> tasks;
+
+            try
+            {
+                tasks = _itaskService.GetTaskList(userId);
+            }
+            catch
+            {
+                tasks = new List<TaskListItemViewModel>();
+            }
 
             ViewBag.SelectedTaskId = selectedTaskId;
             ViewBag.ToastMessage = TempData["ToastMessage"]?.ToString();

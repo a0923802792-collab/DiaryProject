@@ -1,0 +1,125 @@
+﻿@model DiaryProject.ViewModels.Review.ReviewPhotoPageViewModel
+
+@{
+    ViewData["Title"] = "照片回顧";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/review_page.css" asp-append-version="true" />
+}
+
+<div class="review-page">
+    <header class="review-hero">
+        <p class="eyebrow">Review</p>
+        <h1>照片回顧</h1>
+        <p>從照片回到那一天。照片牆負責瀏覽，精選片段作為次層回顧入口。</p>
+
+        <div class="review-tab-row">
+            <a class="btn btn-ghost" asp-controller="Review" asp-action="Time">時間回顧</a>
+            <a class="btn btn-primary" asp-controller="Review" asp-action="Photos">照片回顧</a>
+        </div>
+    </header>
+
+    <section class="review-section">
+        <div class="review-section-title">
+            <div>
+                <h2>照片牆</h2>
+                <p>先看畫面，點選照片後再查看那一天的細節。</p>
+            </div>
+        </div>
+
+        @if (!Model.Photos.Any())
+        {
+            <div class="review-empty">
+                目前沒有照片資料。
+            </div>
+        }
+        else
+        {
+            <div class="review-photo-wall">
+                @for (var i = 0; i < Model.Photos.Count; i++)
+                {
+                    var photo = Model.Photos[i];
+                    var isBig = i % 6 == 0;
+
+                    <button type="button"
+                            class="review-photo-card @(isBig ? "big" : "")"
+                            data-open-photo-detail="@photo.MediaId"
+                            aria-label="查看 @photo.FullDateText 的照片詳情">
+                        <img src="@photo.FileUrl" alt="日記照片" />
+
+                        @if (photo.IsFeatured)
+                        {
+                            <span class="review-photo-badge">精選</span>
+                        }
+                    </button>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="review-section">
+        <div class="review-section-title">
+            <div>
+                <h2>精選片段</h2>
+                <p>少量值得再看一次的照片，點選後以幻燈片方式呈現。</p>
+            </div>
+        </div>
+
+        @if (!Model.FeaturedPhotos.Any())
+        {
+            <div class="review-empty">
+                目前沒有精選片段。
+            </div>
+        }
+        else
+        {
+            <div class="review-featured-list">
+                @foreach (var photo in Model.FeaturedPhotos)
+                {
+                    <button type="button"
+                            class="review-featured-card"
+                            data-open-featured-slides="@photo.MediaId"
+                            aria-label="開啟 @photo.FullDateText 的精選回顧">
+                        <img src="@photo.FileUrl" alt="精選照片" />
+                    </button>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+<div id="reviewModalBackdrop" class="modal-backdrop hidden">
+    <div class="modal">
+        <div id="reviewModalContent"></div>
+    </div>
+</div>
+
+<div id="reviewConfirmBackdrop" class="modal-backdrop review-confirm-backdrop hidden">
+    <div class="modal compact">
+        <div class="modal-head">
+            <div>
+                <p class="eyebrow">Confirm</p>
+                <h3>前往日記詳情</h3>
+            </div>
+
+            <button type="button" class="icon-btn" data-close-review-confirm>×</button>
+        </div>
+
+        <p id="reviewConfirmText">是否前往被選中的日記？</p>
+
+        <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-close-review-confirm>
+                取消
+            </button>
+
+            <a id="reviewConfirmGoLink" class="btn btn-primary" href="#">
+                確認前往
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/review/review_photos.js" asp-append-version="true"></script>
+}

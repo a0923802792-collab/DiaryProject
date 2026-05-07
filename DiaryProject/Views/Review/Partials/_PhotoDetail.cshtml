@@ -1,0 +1,63 @@
+﻿@model DiaryProject.ViewModels.Review.ReviewPhotoItemViewModel
+
+@{
+    var diaryDateText = Model.DiaryDate.ToString("M月d日");
+}
+
+<div class="modal-head">
+    <div>
+        <p class="eyebrow">Photo Detail</p>
+        <h3>@Model.FullDateText</h3>
+    </div>
+
+    <button type="button" class="icon-btn" data-close-review-modal>×</button>
+</div>
+
+<div class="review-modal-body">
+    <img src="@Model.FileUrl"
+         alt="日記照片"
+         class="review-modal-image" />
+
+    <p>@Model.PreviewText</p>
+
+    <div class="review-meta-list">
+        @if (!string.IsNullOrEmpty(Model.MainMoodName))
+        {
+            <span class="review-chip">@Model.MainMoodEmoji @Model.MainMoodName</span>
+        }
+
+        @if (Model.IsFeatured)
+        {
+            <span class="review-chip">值得再看一次</span>
+        }
+    </div>
+
+    @if (Model.Tags.Any())
+    {
+        <p>標籤：@string.Join("、", Model.Tags)</p>
+    }
+</div>
+
+<div class="modal-actions">
+    <a class="btn btn-primary"
+           asp-controller="Review"
+           asp-action="Time"
+           asp-route-year="@Model.DiaryDate.Year"
+           asp-route-month="@Model.DiaryDate.Month"
+           asp-route-selectedDiaryId="@Model.DiaryId">
+        回到這天
+    </a>
+
+    <a class="btn btn-ghost"
+           asp-controller="Diary"
+           asp-action="Detail"
+           asp-route-id="@Model.DiaryId"
+           data-confirm-diary-link
+           data-confirm-diary-date="@diaryDateText">
+        前往日記詳情
+    </a>
+
+    <button type="button" class="btn btn-ghost" data-close-review-modal>
+        關閉
+    </button>
+</div>
