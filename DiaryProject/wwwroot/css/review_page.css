@@ -15,7 +15,7 @@
 }
 
 .review-hero {
-    background: var(--mo-cream-80);
+    background: #FBF9EA;
     border: 1px solid var(--mo-black);
     border-radius: var(--radius-xl);
     padding: 1.5rem 1.75rem;
@@ -263,7 +263,7 @@ button.review-calendar-cell {
 }
 
 .review-calendar-cell.has-diary {
-    background: #ffffff;
+    background: white;
 }
 
 .review-calendar-cell.no-diary {
