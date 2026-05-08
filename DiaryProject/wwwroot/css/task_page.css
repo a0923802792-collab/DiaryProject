@@ -39,7 +39,13 @@
     gap: 22px;
     align-items: start;
 }
-
+.rhythm-panel-shell {
+    background: #FFFFFF;
+    border: 1px solid var(--mo-black);
+    border-radius: 2rem;
+    padding: 2rem;
+    box-shadow: var(--soft-shadow);
+}
 .list-panel {
     background: transparent;
     min-width: 0;
