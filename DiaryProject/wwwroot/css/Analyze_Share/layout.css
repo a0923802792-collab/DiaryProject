@@ -1,0 +1,143 @@
+/* =====================================================================
+   layout.css — 全站共用樣式
+   包含：CSS 變數、Reset、Body、Sidebar
+   各頁面只需引入此檔 + 自己的頁面 CSS，不需重複定義以下內容
+   ===================================================================== */
+
+/* ── CSS 變數 ─────────────────────────────────────── */
+:root {
+    --bg-color: #fcfcfc;
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #e0e0e0;
+    --sidebar-width: 180px;
+    --accent-yellow: #fdf3d0;
+    --card-border: #cccccc;
+    --text-dark: #333333;
+    --text-gray: #666666;
+    --radius: 12px;
+}
+
+/* ── Reset ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ── Body ────────────────────────────────────────── */
+body {
+    font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+    display: flex;
+    height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    overflow: hidden;
+}
+
+/* ── Sidebar 外框 ─────────────────────────────────── */
+.sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    border-right: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 16px;
+    background: var(--sidebar-bg);
+}
+
+/* ── Logo ────────────────────────────────────────── */
+.sidebar .logo {
+    font-size: 1.1rem;
+    font-weight: bold;
+    background: var(--accent-yellow);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 24px;
+    white-space: nowrap;
+}
+
+/* ── 導覽選單 ─────────────────────────────────────── */
+.sidebar nav {
+    flex: 1;
+}
+
+.sidebar .nav-item {
+    padding: 10px 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--text-dark);
+    border-radius: 8px;
+    transition: background 0.15s;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar .nav-item:hover {
+    background: var(--accent-yellow);
+}
+
+.sidebar .nav-item.active {
+    font-weight: bold;
+    background: var(--accent-yellow);
+}
+
+.sidebar .nav-item a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+}
+
+/* ── 底部獎勵按鈕 ──────────────────────────────────── */
+.sidebar .sidebar-footer {
+    border-top: 1px solid var(--sidebar-border);
+    padding-top: 12px;
+}
+
+.sidebar .reward-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.sidebar .reward-icon {
+    width: 52px;
+    height: 52px;
+    background: var(--accent-yellow);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    transition: background 0.2s;
+    margin: 0 auto 4px;
+}
+
+.sidebar .reward-btn:hover .reward-icon {
+    background: #ffe066;
+}
+
+.sidebar .reward-label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    color: var(--text-dark);
+}
+
+/* ── 主內容區（各頁面自己加 padding / overflow 等細節） */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

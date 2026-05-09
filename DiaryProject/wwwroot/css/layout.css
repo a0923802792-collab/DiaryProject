@@ -266,3 +266,127 @@ a {
     overflow-x: hidden;
     padding-right: 0.25rem;
 }
+
+/*=============================================*/
+.side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-icon-btn {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+    .nav-icon-btn svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+    }
+
+    .nav-icon-btn path,
+    .nav-icon-btn polyline,
+    .nav-icon-btn rect,
+    .nav-icon-btn line,
+    .nav-icon-btn circle {
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .nav-icon-btn path,
+    .nav-icon-btn polyline,
+    .nav-icon-btn rect,
+    .nav-icon-btn line {
+        fill: none;
+    }
+
+    .nav-icon-btn .icon-fill {
+        fill: currentColor;
+        stroke: none;
+    }
+
+    .nav-icon-btn:hover {
+        background: #FDFBF7;
+        color: #D9A441;
+        transform: translateY(-1px);
+    }
+
+    .nav-icon-btn:active {
+        transform: translateY(0);
+    }
+
+    .nav-icon-btn:focus-visible {
+        outline: 3px solid rgba(217, 164, 65, 0.35);
+        outline-offset: 2px;
+    }
+
+.nav-icon-btn {
+    position: relative;
+}
+
+    /* 提示文字本體 */
+    .nav-icon-btn::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-4px);
+        background: #2f2a24;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        padding: 6px 10px;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 50;
+    }
+
+    /* 小箭頭 */
+    .nav-icon-btn::before {
+        content: "";
+        position: absolute;
+        left: calc(100% + 4px);
+        top: 50%;
+        transform: translateY(-50%);
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent #2f2a24 transparent transparent;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+        z-index: 50;
+    }
+
+    /* 滑鼠移上去顯示 */
+    .nav-icon-btn:hover::after,
+    .nav-icon-btn:hover::before {
+        opacity: 1;
+    }
+
+    .nav-icon-btn:hover::after {
+        transform: translateY(-50%) translateX(0);
+    }
+
+.page-shell .analyze-share-host {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    overflow: auto;
+}

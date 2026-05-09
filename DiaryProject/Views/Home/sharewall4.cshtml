@@ -1,0 +1,92 @@
+@*
+    sharewall4.cshtml — 分享牆頁面
+
+    架構說明：
+      這個 View 是純 HTML 骨架，不含任何業務邏輯。
+      頁面載入後，main.js（ES Module）會接管所有互動行為：
+        - 從 GET /api/sharewall4 取得貼文資料
+        - 渲染左側貼文列表（render/postList.js）
+        - 渲染分類篩選按鈕（render/categories.js）
+        - 渲染右側詳情面板（render/detail.js）
+        - 處理搜尋、篩選、排序、無限捲動（handlers/search.js）
+        - 處理按讚反應（handlers/reaction.js）
+
+    資料流：
+      sharewall4.cshtml（骨架）
+        → main.js（入口，掛 window 函式 + 初始化）
+          → handlers/search.js（查詢 + 渲染協調）
+            → api.js（GET /api/sharewall4）
+              → ShareWallController（API）
+                → ShareWallData（業務邏輯）
+                  → DiaryRepository（DB）
+
+    重要 HTML id 說明：
+      #search-input       ← 搜尋框（main.js 綁 input 事件）
+      #category-container ← 分類按鈕列（render/categories.js 渲染）
+      #sort-latest        ← 排序按鈕（main.js 綁 click 事件）
+      #sort-hot           ← 排序按鈕
+      #post-list          ← 左側貼文列表（render/postList.js 渲染）
+      #detail-panel       ← 右側詳情面板（render/detail.js 渲染）
+
+    ⚠️ TODO：
+      - 「我的分享」按鈕尚未實作
+      - 「⊕ 發布日記」按鈕尚未實作
+*@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "日常時光 - 分享牆";
+    ViewData["ActiveNav"] = "sharewall";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Analyze_Share/style2.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/Analyze_Share/sharewall4.css" asp-append-version="true">
+}
+
+<div class="breadcrumb">首頁 > 分享牆</div>
+
+<section class="search-section">
+    <div class="search-container">
+        <button class="back-btn">←</button>
+        <div class="search-bar">
+            <!-- 即時搜尋：每次 input 事件觸發 handleSearch(1)（main.js 綁定） -->
+            <input type="text" id="search-input" placeholder="搜尋 標題、內容、標籤...">
+        </div>
+    </div>
+    <!-- 分類篩選按鈕列：由 render/categories.js 動態產生 -->
+    <div id="category-container" class="category-tags"></div>
+</section>
+
+<div class="action-bar">
+    <!-- ⚠️ TODO: 尚未實作 -->
+    <button class="secondary-btn">我的分享</button>
+    <!-- ⚠️ TODO: 尚未實作 -->
+    <button class="primary-btn">⊕ 發布日記</button>
+</div>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <span>類別</span>
+        <!-- 目前選取的分類顯示（點擊可重置為「全部」） -->
+        <span class="filter-tag active" id="current-filter-display" onclick="filterByCategory('全部')"
+              style="cursor:pointer">全部</span>
+    </div>
+    <div class="filter-group">
+        <span>排序</span>
+        <!-- sort-latest / sort-hot：main.js 綁定 click 事件 -->
+        <span class="filter-tag" id="sort-latest" onclick="setSortOrder('latest')">最新</span>
+        <span class="filter-tag" id="sort-hot" onclick="setSortOrder('hot')">熱門</span>
+    </div>
+</div>
+
+<div class="layout-grid" id="sharewall-layout">
+    <!-- 左側貼文列表：由 render/postList.js 動態渲染 -->
+    <div class="post-list" id="post-list"></div>
+
+    <!-- 右側詳情面板：點擊貼文後由 render/detail.js 顯示 -->
+    <aside class="detail-panel" id="detail-panel"></aside>
+</div>
+
+@section Scripts {
+    <script type="module" src="~/js/Analyze_Share/main.js" asp-append-version="true"></script>
+}

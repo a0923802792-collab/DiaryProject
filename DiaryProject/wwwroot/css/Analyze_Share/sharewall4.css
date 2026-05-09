@@ -1,0 +1,219 @@
+/* =====================================================================
+   sharewall4.css
+   分享牆頁面專屬樣式，與 style2.css 分離以便維護。
+   對應頁面：Views/Home/sharewall4.cshtml
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   縮圖游標提示
+   --------------------------------------------------------------------- */
+.lb-thumb {
+    cursor: zoom-in;
+    transition: opacity 0.15s;
+}
+
+.lb-thumb:hover {
+    opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------------
+   燈箱（Lightbox）
+   --------------------------------------------------------------------- */
+#sw-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 半透明背景 */
+.lb-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+}
+
+/* 圖片容器 */
+.lb-img-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 88vw;
+    max-height: 84vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lb-img {
+    max-width: 88vw;
+    max-height: 84vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    user-select: none;
+}
+
+/* 共用按鈕基底 */
+#sw-lightbox button {
+    position: absolute;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 50%;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+#sw-lightbox button:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* 關閉 ✕ */
+.lb-close {
+    top: 18px;
+    right: 22px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+}
+
+/* 左右箭頭 */
+.lb-prev,
+.lb-next {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    font-size: 2rem;
+}
+
+.lb-prev {
+    left: 18px;
+}
+
+.lb-next {
+    right: 18px;
+}
+
+/* 頁碼 */
+.lb-counter {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------
+   貼文卡片
+   --------------------------------------------------------------------- */
+
+/* 卡片可點擊，hover 時淡灰底色 */
+.post-card {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.post-card:hover {
+    background-color: #f9f9f9;
+}
+
+/* 無搜尋結果提示 */
+.no-result {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+    grid-column: 1 / -1;
+}
+
+/* ---------------------------------------------------------------------
+   貼文標籤（卡片內 #標籤）
+   --------------------------------------------------------------------- */
+.post-tags {
+    margin-top: 8px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.post-tag {
+    font-size: 11px;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: #888;
+}
+
+/* ---------------------------------------------------------------------
+   圖片預覽
+   --------------------------------------------------------------------- */
+
+/* 卡片縮圖（列表用） */
+.img-preview img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* 詳情面板多張圖片 grid */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.image-grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* ---------------------------------------------------------------------
+   互動按鈕
+   --------------------------------------------------------------------- */
+
+/* 點擊時輕微縮放反饋 */
+.post-actions button:active {
+    background-color: #eee;
+    transform: scale(0.95);
+}
+
+/* ---------------------------------------------------------------------
+   分類 Tags（搜尋列下方）
+   --------------------------------------------------------------------- */
+.category-tags .tag {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.category-tags .tag.active {
+    background-color: #007AFF;
+    color: white;
+    border-color: #007AFF;
+}
+
+/* ---------------------------------------------------------------------
+   排序按鈕（熱門 / 最新）
+   --------------------------------------------------------------------- */
+.filter-tag {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.filter-tag.active {
+    background-color: #007AFF;
+    color: white;
+    border-color: #007AFF;
+}

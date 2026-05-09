@@ -1,0 +1,74 @@
+@*
+    Achievement.cshtml — 成就牆頁面
+
+    架構說明：
+      這個 View 是純 HTML 骨架，不含業務邏輯。
+      頁面載入後，achievement-main.js 會呼叫 GET /api/achievement 取得 25 個成就資料，
+      並動態渲染至 #achievement-wall 容器。
+
+    資料流：
+      Achievement.cshtml（骨架）
+        → achievement-main.js（fetch）
+          → AchievementController（API）
+            → AchievementData（業務判斷）
+              → AchievementRepository（DB 查詢）
+
+    ⚠️ TODO：
+      - 「本週亮點」和「鼓勵小語」目前是靜態假資料，
+        未來應由後端依使用者實際行為動態產生。
+      - achievement-main.js 目前使用一般函式（非 ES Module），
+        未來建議改為 <script type="module"> 架構與分享牆保持一致。
+*@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "獎勵牆";
+    ViewData["ActiveNav"] = "achievement";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Analyze_Share/achievement.css" asp-append-version="true">
+    }
+
+    <!-- 上方統計區塊：由 JS 的 renderStats() 更新數字 -->
+    <div class="stats-header">
+        <div class="stat-card-group">
+            <div class="stat-card">
+                <div class="stat-label">已解鎖成就</div>
+                <div class="stat-icon">🏅</div>
+                <!-- id="unlocked-count"：JS 填入已解鎖數量 -->
+                <div class="stat-value" id="unlocked-count">…</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">成就總數</div>
+                <div class="stat-icon">📋</div>
+                <!-- id="total-count"：JS 填入總成就數（目前固定 25） -->
+                <div class="stat-value" id="total-count">25</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">完成度</div>
+                <div class="stat-icon">📊</div>
+                <!-- id="percent"：JS 填入解鎖百分比，例如 "60%" -->
+                <div class="stat-value" id="percent">…</div>
+            </div>
+        </div>
+
+        <!-- ⚠️ TODO: 以下為靜態假資料，未來需改由後端動態產生 -->
+        <div class="info-box">
+            <h4>本週亮點</h4>
+            <p>你在忙碌中仍紀錄2天日記、達成3個習慣</p>
+        </div>
+
+        <div class="info-box">
+            <h4>鼓勵小語</h4>
+            <p>你不是在做完美紀錄，而是在學會更溫柔地理解自己。</p>
+        </div>
+    </div>
+
+    <!-- 成就網格：初始顯示「載入中」，由 achievement-main.js 的 renderBadges() 替換 -->
+    <div class="achievement-wall" id="achievement-wall">
+        <div class="badge-loading">載入中…</div>
+    </div>
+
+    @section Scripts {
+        <script type="module" src="~/js/Analyze_Share/achievement-main.js" asp-append-version="true"></script>
+    }

@@ -1,0 +1,436 @@
+/* ══════════════════════════════════════════════════════════════
+   chart.css — 數據圖表頁面專屬樣式
+   ══════════════════════════════════════════════════════════════ */
+
+.chart-page {
+    padding: 28px 36px;
+    min-height: 100vh;
+    background: #f4f6fb;
+}
+
+/* ── 時間篩選器 ── */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+}
+
+.filter-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e2e6ef;
+    background: #f4f6fb;
+    color: #5a6474;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    border-color: #7c8cf8;
+    color: #7c8cf8;
+}
+
+.filter-btn.active {
+    background: #7c8cf8;
+    border-color: #7c8cf8;
+    color: #fff;
+    font-weight: 600;
+}
+
+.filter-custom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-custom label {
+    font-size: 0.82rem;
+    color: #8a94a6;
+    white-space: nowrap;
+}
+
+.filter-custom input[type="date"] {
+    padding: 5px 10px;
+    border: 1.5px solid #e2e6ef;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: #2d3a4a;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.filter-custom input[type="date"]:focus {
+    border-color: #7c8cf8;
+}
+
+.filter-apply-btn {
+    padding: 6px 14px;
+    background: #7c8cf8;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: opacity .15s;
+}
+
+.filter-apply-btn:hover {
+    opacity: .85;
+}
+
+.filter-clear-btn {
+    padding: 6px 12px;
+    background: transparent;
+    color: #b0bac8;
+    border: 1.5px solid #e2e6ef;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+.filter-clear-btn:hover {
+    color: #f27b9c;
+    border-color: #f27b9c;
+}
+
+.filter-info {
+    font-size: 0.82rem;
+    color: #7c8cf8;
+    background: #eef0fd;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+}
+
+/* ── 頁首 ── */
+.chart-header {
+    margin-bottom: 28px;
+}
+
+.chart-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2d3a4a;
+    margin: 0 0 4px 0;
+}
+
+.chart-header p {
+    color: #8a94a6;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ── 統計摘要卡片 ── */
+.summary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.summary-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.summary-card .s-icon {
+    font-size: 1.6rem;
+}
+
+.summary-card .s-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3a4a;
+    line-height: 1;
+}
+
+.summary-card .s-label {
+    font-size: 0.8rem;
+    color: #8a94a6;
+}
+
+/* ── 圖表格線 ── */
+.chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chart-grid.single {
+    grid-template-columns: 1fr;
+}
+
+.chart-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+}
+
+.chart-card h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #5a6474;
+    margin: 0 0 18px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-card h2 .chart-icon {
+    font-size: 1.1rem;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 300px;
+}
+
+.chart-wrap.tall {
+    height: 360px;
+}
+
+/* ── Loading ── */
+.chart-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: #b0bac8;
+    font-size: 0.85rem;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e8eaf0;
+    border-top-color: #7c8cf8;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── 分頁切換列 ── */
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    margin: 24px 0 0;
+    border-bottom: 2px solid #e2e6ef;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: #8a94a6;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: -2px;
+    border-radius: 6px 6px 0 0;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.tab-btn:hover {
+    color: #5a6474;
+    background: rgba(124, 140, 248, 0.06);
+}
+
+.tab-btn.active {
+    color: #7c8cf8;
+    border-bottom-color: #7c8cf8;
+    background: rgba(124, 140, 248, 0.07);
+}
+
+.tab-panel {
+    margin-top: 24px;
+}
+
+/* 隱藏狀態：移出畫面但保留高度讓 Chart.js 能計算尺寸 */
+.tab-panel[data-ready="false"] {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 100%;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* ── 區塊分隔線 ── */
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 20px;
+    color: #5a6474;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e6ef;
+}
+
+/* ── 區間選擇器（Range Slider / Brush） ── */
+.range-slider {
+    position: relative;
+    height: 52px;
+    margin-top: 10px;
+    background: #f0f2f7;
+    border-radius: 6px;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+/* 迷你預覽 canvas */
+.range-slider canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+/* 左右灰色遮罩（未選取區域） */
+.range-slider .rs-mask {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: rgba(180, 188, 200, 0.35);
+    pointer-events: none;
+    transition: none;
+}
+
+.range-slider .rs-mask-left {
+    left: 0;
+    border-radius: 6px 0 0 6px;
+}
+
+.range-slider .rs-mask-right {
+    right: 0;
+    border-radius: 0 6px 6px 0;
+}
+
+/* 選取區域（可拖動平移） */
+.range-slider .rs-window {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border: 2px solid #7c8cf8;
+    border-radius: 4px;
+    background: rgba(124, 140, 248, 0.06);
+    cursor: grab;
+    z-index: 2;
+}
+
+.range-slider .rs-window:active {
+    cursor: grabbing;
+}
+
+/* 左右拖拉把手 */
+.range-slider .rs-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    background: #7c8cf8;
+    cursor: ew-resize;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+
+.range-slider .rs-handle:hover,
+.range-slider .rs-handle:active {
+    background: #5b6dea;
+}
+
+.range-slider .rs-handle-left {
+    left: 0;
+    border-radius: 6px 0 0 6px;
+}
+
+.range-slider .rs-handle-right {
+    right: 0;
+    border-radius: 0 6px 6px 0;
+}
+
+/* 把手上的三條橫線 */
+.range-slider .rs-handle::after {
+    content: '';
+    width: 3px;
+    height: 18px;
+    border-left: 1px solid rgba(255, 255, 255, .6);
+    border-right: 1px solid rgba(255, 255, 255, .6);
+}
+
+/* 區間顯示文字 */
+.range-slider .rs-label {
+    position: absolute;
+    top: -18px;
+    font-size: 11px;
+    color: #7c8cf8;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.range-slider .rs-label-left {
+    left: 0;
+}
+
+.range-slider .rs-label-right {
+    right: 0;
+    text-align: right;
+}
+
+/* ── RWD ── */
+@media (max-width: 900px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-page {
+        padding: 20px 16px;
+    }
+}

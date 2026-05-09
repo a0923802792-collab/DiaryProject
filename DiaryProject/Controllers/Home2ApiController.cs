@@ -2,7 +2,7 @@
 
 [ApiController]
 [Route("api/home")]
-public class HomeApiController : ControllerBase
+public class Home2ApiController : ControllerBase
 {
     [HttpGet("summary")]
     public IActionResult GetSummary()

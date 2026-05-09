@@ -1,0 +1,64 @@
+@* _AppLayout.cshtml — 全站共用 Layout
+   包含：HTML 骨架、共用 CSS、左側 Sidebar
+   各頁面透過 @section Styles 注入自己的 CSS
+   透過 ViewData["Title"] 設定頁籤標題
+   透過 ViewData["ActiveNav"] 設定高亮的導覽項目（sharewall / achievement）
+*@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewData["Title"] ?? "日常時光")</title>
+    <link rel="stylesheet" href="~/css/Analyze_Share/layout.css" asp-append-version="true">
+        @await RenderSectionAsync("Styles", required: false)
+    </head>
+
+    <body>
+
+        <!-- ══ 側邊導覽欄（共用，修改這裡即可同步兩頁） ══ -->
+        <aside class="sidebar">
+            <div>
+                <span class="logo">日常時光</span>
+                <nav>
+                    <ul style="list-style:none;">
+                        <li class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
+                            <span>．</span><span>首頁儀錶板</span>
+                        </li>
+                        <li class="nav-item @(ViewData["ActiveNav"]?.ToString() == "diary" ? "active" : "")">
+                            <a href="#">．日記點滴</a>
+                        </li>
+                        <li class="nav-item @(ViewData["ActiveNav"]?.ToString() == "habit" ? "active" : "")">
+                            <span>．</span><span>習慣養成</span>
+                        </li>
+                        <li class="nav-item @(ViewData["ActiveNav"]?.ToString() == "chart" ? "active" : "")">
+                            <a href="/Home/Chart">．數據圖表</a>
+                        </li>
+                        <li class="nav-item @(ViewData["ActiveNav"]?.ToString() == "sharewall" ? "active" : "")">
+                            <a href="/Home/Sharewall4">．分享牆</a>
+                        </li>
+                        <li class="nav-item @(ViewData["ActiveNav"]?.ToString() == "anonymous" ? "active" : "")">
+                            <span>．</span><span>匿名空間</span>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="/Home/Achievement" class="reward-btn">
+                    <div class="reward-icon">🎁</div>
+                    <span class="reward-label">獎勵</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ══ 頁面主要內容（各頁面自行填入） ══ -->
+        <div class="main-content">
+            @RenderBody()
+        </div>
+
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+
+</html>

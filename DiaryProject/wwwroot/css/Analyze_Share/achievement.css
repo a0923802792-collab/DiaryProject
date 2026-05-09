@@ -1,0 +1,153 @@
+/* achievement.css — 獎勵牆頁面專屬樣式
+   共用的 :root / Reset / body / sidebar 已移至 layout.css
+   ----------------------------------------------------------------- */
+
+/* Main Content 獎勵牆頁面補充 */
+.main-content {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.stats-header {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.stat-card-group {
+    display: flex;
+    gap: 12px;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 110px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.stat-icon {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.info-box {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    min-width: 160px;
+    flex: 1;
+}
+
+.info-box h4 {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.info-box p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* ── 成就網格 ────────────────────────────────────── */
+.achievement-wall {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.badge-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-gray);
+    padding: 40px;
+}
+
+/* ── 成就卡片 ────────────────────────────────────── */
+.badge-card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 18px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    transition: box-shadow 0.2s, transform 0.15s;
+}
+
+/* 已解鎖：彩色邊框 + hover 浮起 */
+.badge-card.unlocked {
+    border-color: #f0c040;
+    background: #fffdf0;
+}
+
+.badge-card.unlocked:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+/* 未解鎖：灰階 */
+.badge-card.locked {
+    opacity: 0.55;
+    filter: grayscale(60%);
+}
+
+.badge-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.badge-name {
+    font-size: 0.82rem;
+    font-weight: bold;
+    color: var(--text-dark);
+    line-height: 1.3;
+}
+
+.badge-desc {
+    font-size: 0.72rem;
+    color: var(--text-gray);
+    line-height: 1.4;
+}
+
+/* 進度條（未解鎖時顯示） */
+.badge-progress-wrap {
+    width: 100%;
+    height: 5px;
+    background: #e8e8e8;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.badge-progress-bar {
+    height: 100%;
+    background: #f0c040;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+
+.badge-progress-text {
+    font-size: 0.68rem;
+    color: var(--text-gray);
+}

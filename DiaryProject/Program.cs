@@ -1,17 +1,19 @@
-using DiaryProject.Data;
+﻿using DiaryProject.Data;
 using DiaryProject.Services;
 using DiaryProject.Services.Review;
 using Microsoft.EntityFrameworkCore;
-using DiaryProject.Services.Review;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// MVC + API Controllers
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 
+// Project services
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+
+// CORS for React dev frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactFront", policy =>
@@ -22,12 +24,13 @@ builder.Services.AddCors(options =>
     });
 });
 
+// EF Core DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// HTTP pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -35,6 +38,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseCors("ReactFront");
