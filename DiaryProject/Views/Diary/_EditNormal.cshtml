@@ -1,0 +1,58 @@
+﻿@model DiaryProject.ViewModels.Diary.Diary_Edit
+
+<div id="normalTemplate" class="@(Model.TemplateType == "normal" ? "" : "hidden")">
+    <div class="content-grid">
+        <div class="editor-panel">
+            <input class="editor-title"
+                   id="titleInput"
+                   name="Title"
+                   value="@Model.Title"
+                   data-field="DiaryNormal.Title"
+                   placeholder="標題"
+                   oninput="markDirty()">
+            <div class="toolbar">
+                <button type="button" class="tool-btn" onclick="formatText('bold')"><b>B</b></button>
+                <button type="button" class="tool-btn" onclick="formatText('italic')"><i>I</i></button>
+                <button type="button" class="tool-btn" onclick="formatText('underline')"><u>U</u></button>
+            </div>
+            <div class="editor-body"
+                 id="bodyInput"
+                 contenteditable="true"
+                 data-field="DiaryNormal.Body"
+                 data-placeholder="文字輸入"
+                 oninput="markDirty()">
+                @Model.Body
+            </div>
+        </div>
+
+        <div class="drawing-panel">
+            <div class="drawing-toolbar">
+                <button type="button" class="draw-tool-btn active" data-tool="pen" onclick="setDrawTool('pen', this)">筆</button>
+                <button type="button" class="draw-tool-btn" data-tool="eraser" onclick="setDrawTool('eraser', this)">橡皮擦</button>
+                <button type="button" class="draw-tool-btn" data-tool="line" onclick="setDrawTool('line', this)">直線</button>
+                <button type="button" class="draw-tool-btn" data-tool="rect" onclick="setDrawTool('rect', this)">矩形</button>
+                <button type="button" class="draw-tool-btn" data-tool="circle" onclick="setDrawTool('circle', this)">圓形</button>
+                <label class="draw-inline-label">
+                    色彩 <input type="color" id="drawColorInput" value="#333333" onchange="setStrokeColor(this.value)">
+                </label>
+                <label class="draw-inline-label">
+                    粗細 <input type="range" id="drawSizeInput" min="1" max="18" value="2" oninput="setStrokeSize(this.value)">
+                </label>
+                <button type="button" class="draw-tool-btn" onclick="undoDraw()">復原</button>
+                <button type="button" class="draw-tool-btn" onclick="clearCanvas()">清空</button>
+                <button type="button" class="draw-tool-btn accent" onclick="saveDrawingV2()">存檔</button>
+            </div>
+            <div class="drawing-canvas-area">
+                <canvas id="drawCanvas" width="240" height="200"></canvas>
+                <div class="canvas-hint" id="canvasHint">🎨<br><small class="hint-small">繪圖區</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-upload-area" id="imageArea" onclick="triggerUpload()">
+        <span class="upload-icon-text">🖼️ 點擊上傳圖片</span>
+        <span class="media-usage-text" data-media-usage>已使用 0/10 張</span>
+        <div class="media-warning-text" data-media-warning></div>
+        <input type="file" id="fileInput" accept="image/*" multiple class="hidden" onchange="handleUpload(event)">
+    </div>
+</div>

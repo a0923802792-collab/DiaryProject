@@ -1,7 +1,7 @@
 ﻿using DiaryProject.ViewModels;
 using DiaryProject.Data;
 using DiaryProject.Models;
-
+using DiaryProject.Models.Task;
 namespace DiaryProject.Services
 {
     public class TaskService : ITaskService

@@ -1,0 +1,75 @@
+﻿@model DiaryProject.ViewModels.Diary.Diary_Detail
+
+<div class="content-panel">
+    <div class="diary-title">@Model.MoodEmoji</div>
+
+    <div class="diary-body">
+        <div class="mood-top-grid">
+            <div class="mood-card">
+                <div class="mood-card-label">情緒</div>
+                <div class="mood-chip-list">
+                    @if (Model.MoodChips != null && Model.MoodChips.Count > 0)
+                    {
+                        foreach (var chip in Model.MoodChips)
+                        {
+                            <span class="mood-chip">@chip</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="mood-chip">🙂 未選擇</span>
+                    }
+                </div>
+            </div>
+
+            <div class="mood-card">
+                <div class="mood-card-label">量表</div>
+
+                <div class="mood-bar-item">
+                    <div class="mood-bar-head">
+                        <span class="mood-bar-label">精神指數</span>
+                        <span class="mood-bar-value">@(Model.EnergyValue ?? 0)<span class="mood-bar-unit"> / 10</span></span>
+                    </div>
+                    <div class="mood-bar-track">
+                        <div class="mood-bar-fill is-spirit" style="width:@((Model.EnergyValue ?? 0) * 10)%"></div>
+                    </div>
+                </div>
+
+                <div class="mood-bar-item">
+                    <div class="mood-bar-head">
+                        <span class="mood-bar-label">壓力指數</span>
+                        <span class="mood-bar-value">@(Model.StressValue ?? 0)<span class="mood-bar-unit"> / 10</span></span>
+                    </div>
+                    <div class="mood-bar-track">
+                        <div class="mood-bar-fill is-stress" style="width:@((Model.StressValue ?? 0) * 10)%"></div>
+                    </div>
+                </div>
+
+                <div class="mood-bar-item">
+                    <div class="mood-bar-head">
+                        <span class="mood-bar-label">睡眠時數</span>
+                        <span class="mood-bar-value">@(Model.SleepValue ?? 0)<span class="mood-bar-unit"> / 10</span></span>
+                    </div>
+                    <div class="mood-bar-track">
+                        <div class="mood-bar-fill is-sleep" style="width:@((Model.SleepValue ?? 0) * 10)%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mood-note-grid">
+            <div class="mood-note-card">
+                <div class="mood-note-label">有什麼小事發生...</div>
+                <div class="mood-note-text">@(string.IsNullOrWhiteSpace(Model.EventNote) ? "（未填寫）" : Model.EventNote)</div>
+            </div>
+            <div class="mood-note-card">
+                <div class="mood-note-label">心裡冒出的第一個想法...</div>
+                <div class="mood-note-text">@(string.IsNullOrWhiteSpace(Model.ThoughtNote) ? "（未填寫）" : Model.ThoughtNote)</div>
+            </div>
+            <div class="mood-note-card">
+                <div class="mood-note-label">最近的生活狀態，我需要...</div>
+                <div class="mood-note-text">@(string.IsNullOrWhiteSpace(Model.NeedNote) ? "（未填寫）" : Model.NeedNote)</div>
+            </div>
+        </div>
+    </div>
+</div>

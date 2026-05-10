@@ -1,5 +1,5 @@
 ﻿using System;
-namespace DiaryProject.Models
+namespace DiaryProject.Models.Task
 {
     public class TaskScheduleRule
     {

@@ -1,4 +1,4 @@
-namespace MyMvcProject.Models;
+namespace DiaryProject.Models;
 
 // =====================================================================
 // 單一成就的資料結構

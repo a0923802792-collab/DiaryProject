@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using MyMvcProject.Models;
+using DiaryProject.Models;
 
-namespace MyMvcProject.Controllers;
+namespace DiaryProject.Controllers;
 
 // ============================================================
 // HomeController — 頁面導覽控制器

@@ -1,4 +1,4 @@
-namespace MyMvcProject.Models;
+namespace DiaryProject.Models;
 
 // =====================================================================
 // 反應計數（對應 PostReactionCount 資料表）

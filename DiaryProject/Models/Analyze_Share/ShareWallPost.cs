@@ -1,4 +1,4 @@
-namespace MyMvcProject.Models;
+namespace DiaryProject.Models;
 
 // =====================================================================
 // 單筆貼文資料（對外回傳）

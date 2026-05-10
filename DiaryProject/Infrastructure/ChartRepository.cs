@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 
-namespace MyMvcProject.Infrastructure;
+namespace DiaryProject.Infrastructure;
 
 // ── 日期範圍篩選器 ────────────────────────────────────────────────────
 /// <summary>

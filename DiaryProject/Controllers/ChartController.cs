@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MyMvcProject.Infrastructure;
+using DiaryProject.Infrastructure;
 
-namespace MyMvcProject.Controllers;
+namespace DiaryProject.Controllers;
 
 [ApiController]
 [Route("api/chart")]

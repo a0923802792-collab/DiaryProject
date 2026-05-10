@@ -1,0 +1,804 @@
+﻿/* ============================================================
+   日記模組公版樣式
+   - 適用於已整合進共用 _Layout 的版本
+   - 保留日記模組共用色票、元件、列表/卡片/modal/toast
+   - 移除舊獨立日記專案的 topbar / sidebar / 整頁位移骨架
+   ============================================================ */
+
+:root {
+    /* 公版色票：Moody Cream Palette */
+    --mo-cream: #FBF9EA;
+    --mo-cream-80: rgba(251, 249, 234, 0.8);
+    --mo-olive: #A1A34E;
+    --mo-black: #000000;
+    --mo-brown: #786C56;
+    --mo-azure: #007FFF;
+    --mo-citron: #D4E2A5;
+    /* 公版字體 */
+    --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    /* 全站語意變數 */
+    --color-bg-space: var(--mo-cream);
+    --color-text-main: var(--mo-black);
+    --bg: var(--mo-cream);
+    --sidebar-bg: var(--mo-cream-80);
+    --sidebar-active: var(--mo-olive);
+    --card-bg: #ffffff;
+    --card-selected: #e0f0d8;
+    --card-mood: #e8f0e0;
+    --border: #d8cdb8;
+    --border-light: #e8dfd0;
+    --text: var(--mo-black);
+    --text-muted: var(--mo-brown);
+    --text-light: #b0a090;
+    --tag-bg: #ece5d8;
+    --tag-border: #d0c5b0;
+    --accent-brown: var(--mo-brown);
+    --accent-green: var(--mo-olive);
+    --accent-red: #c85a5a;
+    --shadow: 0 2px 8px rgba(100, 80, 40, 0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --topbar-h: 78px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* 保留字型與背景風格；若你不想讓日記模組改全站背景，可之後再移除 body 這段 */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-space);
+    background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--color-text-main);
+    min-height: 100vh;
+    margin: 0;
+    transition: background-color 0.3s;
+}
+
+/* ============================================================
+   共用內容區
+   - 不再接管整頁位移，交給 _Layout 的 page-shell 處理
+   ============================================================ */
+.main-content {
+    min-height: auto;
+    padding: 24px;
+    width: 100%;
+    max-width: none;
+}
+
+/* 共用返回按鈕：新增、編輯、詳情頁共用 */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: var(--card-bg);
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+    .back-btn:hover {
+        background: var(--tag-bg);
+    }
+
+.section-label {
+    font-size: 11px;
+    color: var(--accent-green);
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* =============================================================
+   列表頁共用：頂部控制列 / 搜尋篩選 / 批次列 / 卡片 / 分頁
+   適用 diary_index / diary_myshares
+   ============================================================= */
+
+/* 頁面上方控制列：搜尋、篩選、統計與快捷操作 */
+.top-controls {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.panel-box {
+    background: linear-gradient(145deg, #fffdf8, #f8f2e6);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 6px 18px rgba(90, 70, 30, 0.10);
+}
+
+.search-filter-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+}
+
+.search-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* 列表頁搜尋列：關鍵字輸入與搜尋按鈕 */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 700px;
+    height: 50px;
+    padding: 8px 20px;
+    background-color: #fff;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+    .search-box:focus-within {
+        border-color: var(--mo-azure);
+        box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.2);
+    }
+
+    .search-box input {
+        flex: 1;
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #374151;
+        font-family: inherit;
+        font-size: 14px;
+    }
+
+        .search-box input::placeholder {
+            color: var(--text-light);
+        }
+
+.search-submit-btn {
+    border: 1px solid var(--mo-black);
+    background: var(--mo-olive);
+    color: var(--mo-cream);
+    border-radius: 9999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+    .search-submit-btn:hover {
+        background: #fff;
+        color: var(--mo-brown);
+        transform: translateY(-1px);
+    }
+
+/* 篩選列：期間、標籤、模板、分享狀態與排序 */
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: rgba(247, 241, 228, 0.7);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+}
+
+.filter-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.period-group .period-options {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-sep {
+    color: var(--text-light);
+    font-size: 12px;
+}
+
+.filter-btn {
+    padding: 5px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+    .filter-btn:hover,
+    .filter-btn.active {
+        background: var(--text);
+        color: white;
+        border-color: var(--text);
+    }
+
+    .filter-btn.active {
+        background: var(--mo-olive);
+        border-color: var(--mo-black);
+        color: var(--mo-cream);
+    }
+
+.filter-dropdown {
+    padding: 5px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+    .filter-dropdown:hover {
+        background: var(--tag-bg);
+    }
+
+.filter-multi {
+    position: relative;
+}
+
+.tag-filter-btn {
+    min-width: 130px;
+    justify-content: center;
+}
+
+.filter-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 180px;
+    max-height: 220px;
+    overflow: auto;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+    z-index: 20;
+    display: none;
+}
+
+.filter-multi.open .filter-menu {
+    display: block;
+}
+
+.filter-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    color: var(--text);
+    padding: 6px 4px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+}
+
+    .filter-menu-item:hover {
+        background: var(--tag-bg);
+        border-radius: 6px;
+    }
+
+    .filter-menu-item.active {
+        background: var(--mo-olive);
+        color: var(--mo-cream);
+        border-radius: 6px;
+        font-weight: 700;
+    }
+
+    .filter-menu-item input {
+        accent-color: var(--accent-green);
+    }
+
+.single-filter-btn {
+    min-width: 100px;
+    justify-content: center;
+}
+
+.single-filter-menu {
+    min-width: 120px;
+}
+
+/* 統計與操作面板：總篇數、新增日記、草稿入口 */
+.summary-panel {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.count-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px 20px;
+    min-width: 148px;
+    text-align: left;
+}
+
+.count-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.count-number {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+
+.count-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+    .count-sub b {
+        color: var(--text);
+        font-weight: 700;
+    }
+
+.count-sep {
+    margin: 0 2px;
+}
+
+/* 批次操作列：選取日記後顯示刪除、全選、取消 */
+.batch-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+.selected-info {
+    font-weight: 500;
+    padding-right: 2px;
+}
+
+.btn-sm {
+    padding: 5px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    cursor: pointer;
+    background: white;
+    color: var(--text-muted);
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+    .btn-sm.danger {
+        background: var(--accent-red);
+        color: white;
+        border-color: var(--accent-red);
+    }
+
+    .btn-sm:hover {
+        background: var(--tag-bg);
+    }
+
+/* 日記卡片網格：卡片視覺本體維持原設計 */
+.diary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1400px) {
+    .diary-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .diary-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .diary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .diary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.diary-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+    .diary-card:hover {
+        box-shadow: var(--shadow);
+        transform: translateY(-1px);
+    }
+
+    .diary-card.mood {
+        background: var(--card-mood);
+        border-color: #c8d8c0;
+    }
+
+    .diary-card.selected {
+        background: var(--card-selected);
+        border-color: #a8c8a0;
+    }
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.card-date {
+    flex: 1;
+}
+
+.card-tag {
+    padding: 2px 7px;
+    background: #e8e0d0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 10px;
+}
+
+.card-close {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+    .card-close:hover {
+        background: var(--accent-red);
+        color: white;
+        border-color: var(--accent-red);
+    }
+
+    .card-close.checked {
+        background: var(--accent-green);
+        color: white;
+        border-color: var(--accent-green);
+    }
+
+.card-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.card-excerpt {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.card-media {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.card-edit {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+    .card-edit:hover {
+        background: var(--tag-bg);
+    }
+
+/* 分頁按鈕 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    font-family: inherit;
+}
+
+    .page-btn:hover {
+        background: var(--tag-bg);
+    }
+
+    .page-btn.active {
+        background: var(--text);
+        color: white;
+        border-color: var(--text);
+    }
+
+    .page-btn.nav {
+        font-size: 12px;
+    }
+
+/* 共用確認視窗：刪除與日期範圍彈窗使用 */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+    .modal-overlay.show {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+.modal {
+    background: var(--mo-cream);
+    border-radius: 2rem;
+    border: 1px solid var(--mo-black);
+    padding: 28px 32px;
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 8px 8px 0 var(--mo-black);
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.2s;
+}
+
+.modal-overlay.show .modal {
+    transform: scale(1);
+}
+
+.modal h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.modal p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 8px 20px;
+    border-radius: 9999px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1.5px solid var(--border);
+    background: white;
+    transition: all 0.2s;
+}
+
+    .modal-btn:hover {
+        background: var(--tag-bg);
+    }
+
+    .modal-btn.danger {
+        background: var(--mo-olive);
+        color: white;
+        border-color: var(--mo-black);
+    }
+
+/* 共用提示訊息 */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: #2a2418;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    z-index: 400;
+    transition: transform 0.3s;
+    pointer-events: none;
+}
+
+    .toast.show {
+        transform: translateX(-50%) translateY(0);
+    }
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.hidden {
+    display: none;
+}
+
+.search-icon {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.empty-state-card {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.empty-icon {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.empty-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 18px;
+}
+
+.empty-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.no-result {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.modal-desc {
+    margin-bottom: 10px;
+}
+
+.range-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.range-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.range-input {
+    margin-top: 4px;
+    width: 100%;
+    padding: 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+}
+
+/* 手機與平板下維持基本可讀性 */
+@media (max-width: 980px) {
+    .main-content {
+        padding: 16px;
+    }
+}

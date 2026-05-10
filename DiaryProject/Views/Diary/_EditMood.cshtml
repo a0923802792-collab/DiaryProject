@@ -1,0 +1,97 @@
+﻿@model DiaryProject.ViewModels.Diary.Diary_Edit
+
+<div id="moodTemplate" class="@(Model.TemplateType == "mood" ? "" : "hidden")">
+    <div class="content-grid">
+        <div class="editor-panel">
+            <div class="mb-14">
+                <div class="section-label">情緒感受</div>
+                <div class="mood-emotions" id="emotionGrid">
+                    @foreach (var mood in Model.MoodSelection)
+                    {
+                        <button type="button"
+                                class="emotion-btn @(mood.IsSelected ? "active" : "")"
+                                data-mood-id="@mood.MoodId"
+                                onclick="toggleEmotion(this)">
+                            @mood.MoodEmoji @mood.MoodName
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="scale-row">
+                <span class="scale-label">精神指數（0-10）</span>
+                <div class="scale-wrap">
+                    <input type="range" min="0" max="10" value="@Model.EnergyValue" name="EnergyValue" data-field="DiaryMood.EnergyValue" oninput="updateScale(this,'spirit')">
+                    <span class="scale-val" id="spiritVal">@Model.EnergyValue</span>
+                </div>
+            </div>
+
+            <div class="scale-row">
+                <span class="scale-label">壓力指數（0-10）</span>
+                <div class="scale-wrap">
+                    <input type="range" min="0" max="10" value="@Model.StressValue" name="StressValue" data-field="DiaryMood.StressValue" oninput="updateScale(this,'stress')">
+                    <span class="scale-val" id="stressVal">@Model.StressValue</span>
+                </div>
+            </div>
+
+            <div class="scale-row">
+                <span class="scale-label">睡眠時數（0-10）</span>
+                <div class="scale-wrap">
+                    <input type="range" min="0" max="10" value="@Model.SleepValue" name="SleepValue" data-field="DiaryMood.SleepValue" oninput="updateScale(this,'sleep')">
+                    <span class="scale-val" id="sleepVal">@Model.SleepValue</span>
+                </div>
+            </div>
+
+            <div class="mood-prompt">
+                <div class="prompt-header" onclick="togglePrompt()">
+                    隨手記錄（展開輸入）
+                    <span id="promptArrow">▽</span>
+                </div>
+
+                <div class="prompt-body hidden" id="promptBody">
+                    <div class="prompt-item">
+                        <label>有什麼小事發生...</label>
+                        <input type="text" id="moodBody" name="EventNote" value="@Model.EventNote" data-field="DiaryMood.EventNote" placeholder="文字輸入" oninput="markDirty()">
+                    </div>
+                    <div class="prompt-item">
+                        <label>心裡冒出的想法...</label>
+                        <input type="text" id="moodThought" name="ThoughtNote" value="@Model.ThoughtNote" data-field="DiaryMood.ThoughtNote" placeholder="文字輸入" oninput="markDirty()">
+                    </div>
+                    <div class="prompt-item">
+                        <label>最近的生活狀態，我需要...</label>
+                        <input type="text" id="moodNeed" name="NeedNote" value="@Model.NeedNote" data-field="DiaryMood.NeedNote" placeholder="文字輸入" oninput="markDirty()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="drawing-panel">
+            <div class="drawing-toolbar">
+                <button type="button" class="draw-tool-btn active" data-tool="pen" onclick="setDrawTool('pen', this)">筆</button>
+                <button type="button" class="draw-tool-btn" data-tool="eraser" onclick="setDrawTool('eraser', this)">橡皮擦</button>
+                <button type="button" class="draw-tool-btn" data-tool="line" onclick="setDrawTool('line', this)">直線</button>
+                <button type="button" class="draw-tool-btn" data-tool="rect" onclick="setDrawTool('rect', this)">矩形</button>
+                <button type="button" class="draw-tool-btn" data-tool="circle" onclick="setDrawTool('circle', this)">圓形</button>
+                <label class="draw-inline-label">
+                    色彩 <input type="color" value="#333333" onchange="setStrokeColor(this.value)">
+                </label>
+                <label class="draw-inline-label">
+                    粗細 <input type="range" min="1" max="18" value="2" oninput="setStrokeSize(this.value)">
+                </label>
+                <button type="button" class="draw-tool-btn" onclick="undoDraw()">復原</button>
+                <button type="button" class="draw-tool-btn" onclick="clearCanvas()">清空</button>
+                <button type="button" class="draw-tool-btn accent" onclick="saveDrawingV2()">存檔</button>
+            </div>
+            <div class="drawing-canvas-area">
+                <canvas id="drawCanvas2" width="240" height="200"></canvas>
+                <div class="canvas-hint">🎨<br><small class="hint-small">繪圖區</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-upload-area" id="imageAreaMood" onclick="triggerUpload()">
+        <span class="upload-icon-text">🖼️ 點擊上傳圖片</span>
+        <span class="media-usage-text" data-media-usage>已使用 0/10 張</span>
+        <div class="media-warning-text" data-media-warning></div>
+    </div>
+</div>

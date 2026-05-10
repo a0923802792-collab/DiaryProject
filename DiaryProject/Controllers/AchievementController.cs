@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using MyMvcProject.Infrastructure;
-using MyMvcProject.Services;
+using DiaryProject.Infrastructure;
+using DiaryProject.Services;
 
-namespace MyMvcProject.Controllers;
+namespace DiaryProject.Controllers;
 
 /// <summary>
 /// 成就牆 API 控制器。

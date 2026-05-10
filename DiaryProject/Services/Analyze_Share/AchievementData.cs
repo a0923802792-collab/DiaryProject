@@ -1,7 +1,7 @@
-﻿using MyMvcProject.Infrastructure;
-using MyMvcProject.Models;
+﻿using DiaryProject.Infrastructure;
+using DiaryProject.Models;
 
-namespace MyMvcProject.Services;
+namespace DiaryProject.Services;
 
 // =====================================================================
 // AchievementData — 業務邏輯層

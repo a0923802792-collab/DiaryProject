@@ -1,4 +1,4 @@
-namespace MyMvcProject.Models;
+namespace DiaryProject.Models;
 
 // =====================================================================
 // API 回傳：分享牆完整資料

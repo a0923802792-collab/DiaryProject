@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using MyMvcProject.Models;
-using MyMvcProject.Services;
+using DiaryProject.Models;
+using DiaryProject.Services;
 
-namespace MyMvcProject.Controllers;
+namespace DiaryProject.Controllers;
 
 /// <summary>
 /// 分享牆 API 控制器。

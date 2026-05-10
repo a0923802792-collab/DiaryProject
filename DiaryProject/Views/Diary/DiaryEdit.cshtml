@@ -1,0 +1,187 @@
+﻿@model DiaryProject.ViewModels.Diary.Diary_Edit
+@{
+	ViewData["Title"] = "新增/編輯日記";
+}
+
+@section Styles {
+	<link rel="stylesheet" href="~/css/diary/diary-common.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/diary/diary_edit.css" asp-append-version="true" />
+}
+
+<main class="main-content diary-edit-page">
+	<form id="diaryForm"
+		  method="post"
+		  asp-controller="Diary"
+		  asp-action="DiaryEdit"
+		  data-entity="Diary"
+		  novalidate>
+		@Html.AntiForgeryToken()
+		<input type="hidden" id="diaryId" name="DiaryId" value="@Model.DiaryId" data-field="Diary.DiaryId">
+		<input type="hidden" id="templateType" name="TemplateType" value="@Model.TemplateType">
+		<input type="hidden" id="diaryDateHidden" name="DiaryDate" value="@Model.DiaryDate">
+		<input type="hidden" id="diaryTimeHidden" value="@Model.DiaryTime">
+		<input type="hidden" id="bodyHidden" name="Body" value="@Model.Body">
+		<input type="hidden" id="visibilityHidden" name="Visibility" value="private">
+		<input type="hidden" id="selectedTagsCsv" name="SelectedTagsCsv" value="">
+		<input type="hidden" id="deletedCustomTagsCsv" name="DeletedCustomTagsCsv" value="">
+		<input type="hidden" id="selectedMoodIdsCsv" name="SelectedMoodIdsCsv" value="">
+		<input type="hidden" id="mediaItemsJson" name="mediaItemsJson" value="">
+		<input type="hidden" id="userId" name="UserId" data-field="Diary.UserId">
+		<input type="hidden" id="diaryStatus" name="Status" value="draft" data-field="Diary.Status">
+		<input type="hidden" id="createdAt" name="CreatedAt" data-field="Diary.CreatedAt">
+		<input type="hidden" id="updatedAt" name="UpdatedAt" data-field="Diary.UpdatedAt">
+
+		<a class="back-btn" href="javascript:void(0)" onclick="handleBack()">返回</a>
+
+		<div class="mb-14">
+			<div class="dt-row">
+				<div class="date-box">
+					<div class="day-num" id="dayNum">--</div>
+					<div class="day-name" id="dayName">--</div>
+				</div>
+				<div class="dt-main">
+					<div class="date-text" id="dateText">
+						<span id="dateLabel">選擇日期</span> <span class="cal-icon" id="calendarBtn" title="選擇日期">📅</span>
+						<input type="date" id="datePicker" class="date-picker-hidden">
+					</div>
+					<div class="date-select-row">
+						<select class="time-select" id="timeSelect" name="DiaryTime" data-field="Diary.DiaryTime">
+							<option>00:00</option>
+							<option>01:00</option>
+							<option>02:00</option>
+							<option>03:00</option>
+							<option>04:00</option>
+							<option>05:00</option>
+							<option>06:00</option>
+							<option>07:00</option>
+							<option>08:00</option>
+							<option>09:00</option>
+							<option>10:00</option>
+							<option>11:00</option>
+							<option>12:00</option>
+							<option>13:00</option>
+							<option>14:00</option>
+							<option>15:00</option>
+							<option>16:00</option>
+							<option>17:00</option>
+							<option>18:00</option>
+							<option>19:00</option>
+							<option>20:00</option>
+							<option>21:00</option>
+							<option>22:00</option>
+							<option>23:00</option>
+							<option>24:00</option>
+						</select>
+						<select class="weather-select" id="weatherSelect" name="WeatherType" data-field="Diary.WeatherType">
+							<option value="sunny">☀️ 晴天</option>
+							<option value="cloudy">☁️ 陰天</option>
+							<option value="rainy">🌧️ 雨天</option>
+						</select>
+					</div>
+				</div>
+				<div class="action-row">
+					<div class="share-toggle" data-field="Diary.Visibility">
+						<button type="button" class="share-opt active" id="sharePrivate" data-value="private" onclick="setShare('private')">私人</button>
+						<button type="button" class="share-opt" id="shareAnon" data-value="shared" onclick="setShare('anon')">匿名分享</button>
+					</div>
+					<div class="action-buttons-group">
+						<button type="button" class="action-btn" onclick="saveDraft()">暫存草稿</button>
+						<button type="button" class="action-btn complete" onclick="completeDiary()">完成日記</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="meta-grid">
+			<div>
+				<div class="tags-area" id="tagsArea">
+					<span class="template-label">日記標籤</span>
+					@{
+						var selectedTags = new HashSet<string>(Model.TagName ?? new List<string>());
+					}
+					@foreach (var tag in Model.SystemTagName)
+					{
+						<span class="tag-pill @(selectedTags.Contains(tag) ? "active" : "")" data-tag="@tag" onclick="toggleTag(this)">
+							@tag
+						</span>
+					}
+					@foreach (var tag in Model.UserCustomTagName)
+					{
+						<span class="tag-pill custom-tag-pill @(selectedTags.Contains(tag) ? "active" : "")" data-custom="1" data-tag="@tag" onclick="toggleTag(this)">
+							<span class="tag-text">@tag</span>
+							<button type="button" class="tag-remove-btn" title="刪除自訂標籤" onclick="removeCustomTag(event, this)">×</button>
+						</span>
+					}
+
+					<span class="tag-pill add-tag-btn add-tag-pill" id="addTagBtn" onclick="showAddTag()">+ 新增標籤</span>
+					<input class="add-tag-input hidden" id="addTagInput" placeholder="輸入標籤..." onblur="addTag()"
+						   onkeydown="if(event.key==='Enter')addTag()">
+				</div>
+			</div>
+			<div>
+				<div class="template-area" data-field="Diary.TemplateType">
+					<span class="template-label">模板類型</span>
+					<button type="button"
+							class="tmpl-btn @(Model.TemplateType == "normal" ? "active" : "")"
+							id="tmplNormal"
+							onclick="switchTemplate('normal')">
+						一般
+					</button>
+					<button type="button"
+							class="tmpl-btn @(Model.TemplateType == "mood" ? "active" : "")"
+							id="tmplMood"
+							onclick="switchTemplate('mood')">
+						心情
+					</button>
+				</div>
+			</div>
+		</div>
+
+		@await Html.PartialAsync("_EditNormal", Model)
+		@await Html.PartialAsync("_EditMood", Model)
+	</form>
+</main>
+
+<div class="modal-overlay" id="leaveModal">
+	<div class="modal">
+		<h3>離開編輯？</h3>
+		<p>尚未儲存內容，確定要離開嗎？</p>
+		<div class="modal-buttons">
+			<button type="button" class="modal-btn" onclick="hideModal('leaveModal')">繼續編輯</button>
+			<button type="button" class="modal-btn danger" onclick="confirmLeave()">確定離開</button>
+		</div>
+	</div>
+</div>
+
+<div class="modal-overlay" id="emptyModal">
+	<div class="modal">
+		<h3>內容尚未完成</h3>
+		<p>請先輸入內容，再進行儲存。</p>
+		<div class="modal-buttons">
+			<button type="button" class="modal-btn" onclick="hideModal('emptyModal')">知道了</button>
+		</div>
+	</div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+	<div class="modal">
+		<h3>確認刪除</h3>
+		<p id="deleteModalText">確定要刪除嗎？移除後無法復原。</p>
+		<div class="modal-buttons">
+			<button type="button" class="modal-btn" onclick="hideModal('deleteModal')">取消</button>
+			<button type="button" class="modal-btn danger" onclick="confirmPendingDelete()">確定刪除</button>
+		</div>
+	</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+@section Scripts {
+	<script>
+		window.initialMediaItems = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+					(Model.MediaItems ?? new List<DiaryProject.ViewModels.Diary.Diary_EditMediaItem>())
+							.Select(x => new { kind = x.Kind, src = x.Src })
+			));
+	</script>
+	<script src="~/js/diary/diary_edit.js" asp-append-version="true"></script>
+}

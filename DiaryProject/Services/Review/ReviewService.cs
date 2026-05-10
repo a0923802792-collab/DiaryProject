@@ -1,4 +1,4 @@
-﻿using DiaryProject.Data;
+﻿using DiaryProject.Models;
 using DiaryProject.ViewModels.Review;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +6,9 @@ namespace DiaryProject.Services.Review
 {
     public class ReviewService : IReviewService
     {
-        private readonly AppDbContext _context;
+        private readonly DiarySystemDbContext _context;
 
-        public ReviewService(AppDbContext context)
+        public ReviewService(DiarySystemDbContext context)
         {
             _context = context;
         }
@@ -21,7 +21,7 @@ namespace DiaryProject.Services.Review
             long? selectedDiaryId = null)
         {
             var today = DateTime.Today;
-            var startDate = new DateTime(year, month, 1);
+            var startDate = new DateOnly(year, month, 1);
             var endDate = startDate.AddMonths(1);
 
             var diaries = await _context.Diaries
@@ -33,11 +33,9 @@ namespace DiaryProject.Services.Review
                     d.DiaryDate < endDate)
                 .Include(d => d.DiaryNormal)
                 .Include(d => d.DiaryMood)
-                .Include(d => d.DiaryMoodSelections)
-                    .ThenInclude(ms => ms.Mood)
-                .Include(d => d.DiaryTags)
-                    .ThenInclude(dt => dt.Tag)
-                .Include(d => d.DiaryMedias)
+                .Include(d => d.Moods)
+                .Include(d => d.Tags)
+                .Include(d => d.DiaryMedia)
                 .OrderByDescending(d => d.DiaryDate)
                 .ThenByDescending(d => d.DiaryTime)
                 .ToListAsync();
@@ -47,19 +45,17 @@ namespace DiaryProject.Services.Review
                 : null;
 
             var finalSelectedDate =
-                selectedDiary?.DiaryDate.Date
+                selectedDiary?.DiaryDate.ToDateTime(TimeOnly.MinValue).Date
                 ?? selectedDate?.Date
                 ?? (year == today.Year && month == today.Month
                     ? today.Date
-                    : startDate.Date);
+                    : new DateTime(year, month, 1));
 
             var diaryGroups = diaries
-                .GroupBy(d => d.DiaryDate.Date)
+                .GroupBy(d => d.DiaryDate.ToDateTime(TimeOnly.MinValue).Date)
                 .ToDictionary(
                     g => g.Key,
-                    g => g
-                        .OrderByDescending(d => d.DiaryTime)
-                        .ToList()
+                    g => g.OrderByDescending(d => d.DiaryTime).ToList()
                 );
 
             var firstDayOfMonth = new DateTime(year, month, 1);
@@ -77,9 +73,7 @@ namespace DiaryProject.Services.Review
                 diaryGroups.TryGetValue(currentDate.Date, out var dayDiaries);
 
                 var mainDiary = dayDiaries?.FirstOrDefault();
-                var mainMood = mainDiary?.DiaryMoodSelections
-                    .Select(ms => ms.Mood)
-                    .FirstOrDefault();
+                var mainMood = mainDiary?.Moods.FirstOrDefault();
 
                 calendarDays.Add(new ReviewCalendarDayViewModel
                 {
@@ -90,7 +84,7 @@ namespace DiaryProject.Services.Review
                     IsFuture = isFuture,
                     HasDiary = mainDiary != null,
                     DiaryCount = dayDiaries?.Count ?? 0,
-                    HasPhoto = dayDiaries?.Any(d => d.DiaryMedias.Any()) ?? false,
+                    HasPhoto = dayDiaries?.Any(d => d.DiaryMedia.Any()) ?? false,
                     IsSelected = currentDate.Date == finalSelectedDate.Date,
                     MainMoodName = mainMood?.MoodName,
                     MainMoodEmoji = mainMood?.MoodEmoji,
@@ -124,13 +118,13 @@ namespace DiaryProject.Services.Review
             DateTime date)
         {
             var today = DateTime.Today;
-            var targetDate = date.Date;
+            var targetDate = DateOnly.FromDateTime(date.Date);
 
-            if (targetDate > today)
+            if (date.Date > today)
             {
                 return new ReviewDaySummaryPanelViewModel
                 {
-                    Date = targetDate,
+                    Date = date.Date,
                     IsFuture = true,
                     Diary = null
                 };
@@ -144,11 +138,9 @@ namespace DiaryProject.Services.Review
                     d.DiaryDate == targetDate)
                 .Include(d => d.DiaryNormal)
                 .Include(d => d.DiaryMood)
-                .Include(d => d.DiaryMoodSelections)
-                    .ThenInclude(ms => ms.Mood)
-                .Include(d => d.DiaryTags)
-                    .ThenInclude(dt => dt.Tag)
-                .Include(d => d.DiaryMedias)
+                .Include(d => d.Moods)
+                .Include(d => d.Tags)
+                .Include(d => d.DiaryMedia)
                 .OrderByDescending(d => d.DiaryTime)
                 .ToListAsync();
 
@@ -156,7 +148,7 @@ namespace DiaryProject.Services.Review
 
             return new ReviewDaySummaryPanelViewModel
             {
-                Date = targetDate,
+                Date = date.Date,
                 IsFuture = false,
                 Diary = diary == null ? null : ToDaySummaryViewModel(diary)
             };
@@ -187,11 +179,9 @@ namespace DiaryProject.Services.Review
                 .AsNoTracking()
                 .Include(d => d.DiaryNormal)
                 .Include(d => d.DiaryMood)
-                .Include(d => d.DiaryMoodSelections)
-                    .ThenInclude(ms => ms.Mood)
-                .Include(d => d.DiaryTags)
-                    .ThenInclude(dt => dt.Tag)
-                .Include(d => d.DiaryMedias)
+                .Include(d => d.Moods)
+                .Include(d => d.Tags)
+                .Include(d => d.DiaryMedia)
                 .FirstOrDefaultAsync(d =>
                     d.UserId == userId &&
                     d.DiaryId == diaryId &&
@@ -235,7 +225,7 @@ namespace DiaryProject.Services.Review
         private ReviewDaySummaryPanelViewModel BuildSelectedDayPanel(
             DateTime selectedDate,
             DateTime today,
-            Dictionary<DateTime, List<Models.Diary.Diary>> diaryGroups)
+            Dictionary<DateTime, List<Diary>> diaryGroups)
         {
             if (selectedDate.Date > today.Date)
             {
@@ -259,34 +249,30 @@ namespace DiaryProject.Services.Review
             };
         }
 
-        private IQueryable<Models.Diary.DiaryMedia> GetPhotoQuery(int userId)
+        private IQueryable<DiaryMedium> GetPhotoQuery(int userId)
         {
-            return _context.DiaryMedias
+            return _context.DiaryMedia
                 .AsNoTracking()
                 .Where(m => m.MediaType == "image" || m.MediaType == "drawing")
                 .Include(m => m.Diary)
                     .ThenInclude(d => d.DiaryMood)
                 .Include(m => m.Diary)
-                    .ThenInclude(d => d.DiaryMoodSelections)
-                        .ThenInclude(ms => ms.Mood)
+                    .ThenInclude(d => d.Moods)
                 .Include(m => m.Diary)
-                    .ThenInclude(d => d.DiaryTags)
-                        .ThenInclude(dt => dt.Tag)
+                    .ThenInclude(d => d.Tags)
                 .Where(m =>
                     m.Diary.UserId == userId &&
                     m.Diary.Status != "deleted");
         }
 
-        private ReviewDaySummaryViewModel ToDaySummaryViewModel(Models.Diary.Diary diary)
+        private ReviewDaySummaryViewModel ToDaySummaryViewModel(Diary diary)
         {
-            var mainMood = diary.DiaryMoodSelections
-                .Select(ms => ms.Mood)
-                .FirstOrDefault();
+            var mainMood = diary.Moods.FirstOrDefault();
 
             return new ReviewDaySummaryViewModel
             {
                 DiaryId = diary.DiaryId,
-                DiaryDate = diary.DiaryDate,
+                DiaryDate = diary.DiaryDate.ToDateTime(TimeOnly.MinValue),
                 TemplateType = diary.TemplateType,
                 Title = diary.DiaryNormal?.Title,
                 PreviewText = diary.PreviewText,
@@ -296,20 +282,18 @@ namespace DiaryProject.Services.Review
                 EnergyValue = diary.DiaryMood?.EnergyValue,
                 StressValue = diary.DiaryMood?.StressValue,
                 SleepValue = diary.DiaryMood?.SleepValue,
-                Tags = diary.DiaryTags
-                    .Select(dt => dt.Tag.TagName)
+                Tags = diary.Tags
+                    .Select(t => t.TagName)
                     .ToList(),
-                PhotoUrls = diary.DiaryMedias
+                PhotoUrls = diary.DiaryMedia
                     .Select(m => m.FileUrl)
                     .ToList()
             };
         }
 
-        private ReviewPhotoItemViewModel ToPhotoItemViewModel(Models.Diary.DiaryMedia media)
+        private ReviewPhotoItemViewModel ToPhotoItemViewModel(DiaryMedium media)
         {
-            var mainMood = media.Diary.DiaryMoodSelections
-                .Select(ms => ms.Mood)
-                .FirstOrDefault();
+            var mainMood = media.Diary.Moods.FirstOrDefault();
 
             return new ReviewPhotoItemViewModel
             {
@@ -317,16 +301,16 @@ namespace DiaryProject.Services.Review
                 DiaryId = media.DiaryId,
                 FileUrl = media.FileUrl,
                 MediaType = media.MediaType,
-                DiaryDate = media.Diary.DiaryDate,
+                DiaryDate = media.Diary.DiaryDate.ToDateTime(TimeOnly.MinValue),
                 PreviewText = media.Diary.PreviewText,
                 MainMoodName = mainMood?.MoodName,
                 MainMoodEmoji = mainMood?.MoodEmoji,
-                Tags = media.Diary.DiaryTags
-                    .Select(dt => dt.Tag.TagName)
+                Tags = media.Diary.Tags
+                    .Select(t => t.TagName)
                     .ToList(),
                 IsFeatured =
                     media.Diary.DiaryMood != null &&
-                    media.Diary.DiaryMood.StressValue <= 4
+                    (media.Diary.DiaryMood.StressValue ?? 10) <= 4
             };
         }
     }

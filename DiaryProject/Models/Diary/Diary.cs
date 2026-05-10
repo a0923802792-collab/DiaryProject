@@ -1,41 +1,45 @@
-﻿using DiaryProject.Models.Diary;
+﻿using System;
+using System.Collections.Generic;
 
-namespace DiaryProject.Models.Diary
+namespace DiaryProject.Models;
+
+public partial class Diary
 {
-    public class Diary
-    {
-        public long DiaryId { get; set; }
+    public long DiaryId { get; set; }
 
-        public int UserId { get; set; }
+    public int UserId { get; set; }
 
-        public string TemplateType { get; set; } = "";
+    public string TemplateType { get; set; } = null!;
 
-        public string? PreviewText { get; set; }
+    public string? PreviewText { get; set; }
 
-        public DateTime DiaryDate { get; set; }
+    public DateOnly DiaryDate { get; set; }
 
-        public TimeSpan DiaryTime { get; set; }
+    public TimeOnly DiaryTime { get; set; }
 
-        public string? WeatherType { get; set; }
+    public string? WeatherType { get; set; }
 
-        public string Visibility { get; set; } = "private";
+    public string Visibility { get; set; } = null!;
 
-        public string Status { get; set; } = "draft";
+    public string Status { get; set; } = null!;
 
-        public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-        public DateTime UpdatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
-        public DateTime? DeletedAt { get; set; }
+    public DateTime? DeletedAt { get; set; }
 
-        public DiaryNormal? DiaryNormal { get; set; }
+    public virtual ICollection<DiaryMedium> DiaryMedia { get; set; } = new List<DiaryMedium>();
 
-        public DiaryMood? DiaryMood { get; set; }
+    public virtual DiaryMood? DiaryMood { get; set; }
 
-        public ICollection<DiaryTag> DiaryTags { get; set; } = new List<DiaryTag>();
+    public virtual DiaryNormal? DiaryNormal { get; set; }
 
-        public ICollection<DiaryMoodSelection> DiaryMoodSelections { get; set; } = new List<DiaryMoodSelection>();
+    public virtual ICollection<PostReactionCount> PostReactionCounts { get; set; } = new List<PostReactionCount>();
 
-        public ICollection<DiaryMedia> DiaryMedias { get; set; } = new List<DiaryMedia>();
-    }
+    public virtual User User { get; set; } = null!;
+
+    public virtual ICollection<Mood> Moods { get; set; } = new List<Mood>();
+
+    public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }

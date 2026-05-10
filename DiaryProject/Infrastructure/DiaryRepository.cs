@@ -1,6 +1,6 @@
 using Microsoft.Data.SqlClient;
 
-namespace MyMvcProject.Infrastructure;
+namespace DiaryProject.Infrastructure;
 
 // =====================================================================
 // 原始資料列（Raw Row）— 資料庫欄位的直接對應，不含業務邏輯

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 
-namespace MyMvcProject.Infrastructure;
+namespace DiaryProject.Infrastructure;
 
 // =====================================================================
 // DiaryStats — 從 master DB 查出的日記相關原始統計

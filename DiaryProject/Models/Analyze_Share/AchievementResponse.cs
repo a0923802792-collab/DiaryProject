@@ -1,4 +1,4 @@
-namespace MyMvcProject.Models;
+namespace DiaryProject.Models;
 
 // =====================================================================
 // GET /api/achievement 的回傳結構

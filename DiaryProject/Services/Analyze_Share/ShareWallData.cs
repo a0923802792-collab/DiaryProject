@@ -1,8 +1,8 @@
 using Microsoft.Data.SqlClient;
-using MyMvcProject.Infrastructure;
-using MyMvcProject.Models;
+using DiaryProject.Infrastructure;
+using DiaryProject.Models;
 
-namespace MyMvcProject.Services;
+namespace DiaryProject.Services;
 
 // =====================================================================
 // 分享牆資料存取層

@@ -1,4 +1,4 @@
-namespace MyMvcProject.Models;
+namespace DiaryProject.Models;
 
 // =====================================================================
 // 查詢參數：前端透過 Query String 傳入篩選與排序條件

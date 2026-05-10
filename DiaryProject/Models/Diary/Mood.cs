@@ -1,20 +1,19 @@
-﻿using DiaryProject.Models.Diary;
+﻿using System;
+using System.Collections.Generic;
 
-namespace DiaryProject.Models.Diary
+namespace DiaryProject.Models;
+
+public partial class Mood
 {
-    public class Mood
-    {
-        public string MoodId { get; set; } = "";
+    public string MoodId { get; set; } = null!;
 
-        public string MoodName { get; set; } = "";
+    public string MoodName { get; set; } = null!;
 
+    public string MoodEmoji { get; set; } = null!;
 
-        public string MoodEmoji { get; set; } = "";
+    public bool IsPositive { get; set; }
 
-        public bool IsPositive { get; set; }
+    public bool IsHighEnergy { get; set; }
 
-        public bool IsHighEnergy { get; set; }
-
-        public ICollection<DiaryMoodSelection> DiaryMoodSelections { get; set; } = new List<DiaryMoodSelection>();
-    }
+    public virtual ICollection<Diary> Diaries { get; set; } = new List<Diary>();
 }

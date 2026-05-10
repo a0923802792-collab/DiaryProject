@@ -1,0 +1,209 @@
+﻿@model DiaryProject.ViewModels.Diary.Diary_ListAll
+@{
+    ViewData["Title"] = "日記列表";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/diary/diary-common.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/diary/diary_index.css" asp-append-version="true" />
+}
+
+<main class="main-content diary-list-page">
+
+    <div class="top-controls">
+
+        <div class="search-filter-block panel-box">
+
+            <div class="search-filter-row">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" name="q" data-field="query.keyword"
+                           placeholder="搜尋日記（標題、內容、標籤、日期）"
+                           onkeydown="handleSearch(event)"
+                           oninput="clearSearchWhenEmpty(event)">
+                    <button class="search-submit-btn" id="searchBtn" type="button" onclick="runSearch()">搜尋</button>
+                </div>
+            </div>
+
+            <div class="filter-row">
+
+                <div class="filter-group period-group">
+                    <span class="filter-title">期間</span>
+                    <div class="period-options">
+                        <button class="filter-btn active" type="button" data-filter="period" data-value="all" onclick="setTimeFilter(this,'all')">全部</button>
+                        <button class="filter-btn" type="button" data-filter="period" data-value="week" onclick="setTimeFilter(this,'week')">本週</button>
+                        <button class="filter-btn" type="button" data-filter="period" data-value="month" onclick="setTimeFilter(this,'month')">本月</button>
+                        <button class="filter-btn" type="button" data-filter="period" data-value="range" onclick="setTimeFilter(this,'range')">特定範圍</button>
+                    </div>
+                </div>
+
+                <span class="filter-sep">|</span>
+
+                <div class="filter-group">
+                    <span class="filter-title">標籤</span>
+                    <div class="filter-multi" id="tagFilterWrap">
+                        <button class="filter-dropdown tag-filter-btn" type="button" id="tagFilterBtn" onclick="toggleTagMenu()">
+                            全部
+                        </button>
+                        <div class="filter-menu" id="tagFilterMenu"></div>
+                    </div>
+                </div>
+
+                <span class="filter-sep">|</span>
+
+                <div class="filter-group">
+                    <span class="filter-title">模板</span>
+                    <div class="filter-multi single-filter" id="templateFilterWrap">
+                        <button class="filter-dropdown single-filter-btn" type="button" id="templateFilterBtn" onclick="toggleSingleFilterMenu('template')">全部</button>
+                        <div class="filter-menu single-filter-menu">
+                            <button type="button" class="filter-menu-item active" data-value="all" onclick="setSingleFilter('template','all','全部')">全部</button>
+                            <button type="button" class="filter-menu-item" data-value="normal" onclick="setSingleFilter('template','normal','一般模板')">一般模板</button>
+                            <button type="button" class="filter-menu-item" data-value="mood" onclick="setSingleFilter('template','mood','心情模板')">心情模板</button>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="filter-sep">|</span>
+
+                <div class="filter-group">
+                    <span class="filter-title">分享狀態</span>
+                    <div class="filter-multi single-filter" id="shareFilterWrap">
+                        <button class="filter-dropdown single-filter-btn" type="button" id="shareFilterBtn" onclick="toggleSingleFilterMenu('share')">全部</button>
+                        <div class="filter-menu single-filter-menu">
+                            <button type="button" class="filter-menu-item active" data-value="all" onclick="setSingleFilter('share','all','全部')">全部</button>
+                            <button type="button" class="filter-menu-item" data-value="shared" onclick="setSingleFilter('share','shared','已分享')">已分享</button>
+                            <button type="button" class="filter-menu-item" data-value="private" onclick="setSingleFilter('share','private','未分享')">未分享</button>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="filter-sep">|</span>
+
+                <div class="filter-group">
+                    <span class="filter-title">排序</span>
+                    <div class="filter-multi single-filter" id="sortFilterWrap">
+                        <button class="filter-dropdown single-filter-btn" type="button" id="sortFilterBtn" onclick="toggleSingleFilterMenu('sort')">由新到舊</button>
+                        <div class="filter-menu single-filter-menu">
+                            <button type="button" class="filter-menu-item active" data-value="desc" onclick="setSingleFilter('sort','desc','由新到舊', false)">由新到舊</button>
+                            <button type="button" class="filter-menu-item" data-value="asc" onclick="setSingleFilter('sort','asc','由舊到新', false)">由舊到新</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="summary-panel">
+            <div class="count-box panel-box">
+                <div class="count-label">總篇數</div>
+                <div class="count-number" id="totalCount">@Model.TotalCount</div>
+                <div class="count-sub">
+                    一般日記 <b id="normalCount">@Model.NormalCount</b>
+                    <span class="count-sep">｜</span>
+                    心情日記 <b id="moodCount">@Model.MoodCount</b>
+                </div>
+            </div>
+
+            <div class="action-box panel-box">
+                <a class="new-btn" href="@Url.Action("DiaryEdit", "Diary")" title="新增日記">
+                    <span class="txt">＋ 新增日記</span>
+                </a>
+                <a class="draft-btn" href="#" title="草稿箱">
+                    <span class="draft-emoji">🗂️ 草稿箱</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="batch-bar">
+        <span class="selected-info hidden" id="selectedInfo"></span>
+        <button class="btn-sm danger hidden" id="batchDeleteBtn" onclick="showDeleteModal()">刪除</button>
+        <button class="btn-sm hidden" id="selectAllBtn" onclick="selectAll()">全選當頁</button>
+        <button class="btn-sm hidden" id="cancelSelectBtn" onclick="cancelSelection()">取消刪除</button>
+    </div>
+
+    <div class="diary-grid" id="diaryGrid"></div>
+
+    <div id="emptyState" class="empty-state-card hidden">
+        <div class="empty-icon">📔</div>
+        <div class="empty-title">還沒有日記</div>
+        <div class="empty-desc">
+            可從「新增日記」開始記錄今天，或到草稿箱繼續未完成內容。
+        </div>
+        <div class="empty-actions">
+            <a class="action-btn" href="@Url.Action("DiaryEdit", "Diary")">✏️ 新增第一篇日記</a>
+            <a class="action-btn" href="#">🗂️ 前往草稿箱</a>
+        </div>
+    </div>
+
+    <div id="noResult" class="no-result hidden">
+        找不到相關日記
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+</main>
+
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <h3>⚠️ 確認刪除</h3>
+        <p id="deleteModalText">確定要刪除這N篇日記嗎？<br>移除後無法復原。</p>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="hideModal('deleteModal')">取消</button>
+            <button class="modal-btn danger" onclick="confirmDelete()">確定刪除</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="rangeModal">
+    <div class="modal">
+        <h3>📅 特定範圍查詢</h3>
+        <p class="modal-desc">可跨年度設定開始與結束日期。</p>
+        <div class="range-fields">
+            <label class="range-label">
+                開始日期
+                <input id="rangeStart" type="date" name="startDate" data-field="query.startDate" class="range-input">
+            </label>
+            <label class="range-label">
+                結束日期
+                <input id="rangeEnd" type="date" name="endDate" data-field="query.endDate" class="range-input">
+            </label>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="clearRangeFilter()">清除範圍</button>
+            <button class="modal-btn" onclick="hideModal('rangeModal')">取消</button>
+            <button class="modal-btn danger" onclick="confirmRangeFilter()">套用</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<form id="batchDeleteTokenForm" class="hidden">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        window.deleteDiariesUrl = '@Url.Action("DeleteDiaries", "Diary")';
+        window.diaryEntries = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.Diaries.Select(d => new
+                    {
+                            id = d.DiaryId,
+                            date = d.DiaryDate,
+                            time = "00:00",
+                            tags = d.TagName,
+                            title = d.Title,
+                            excerpt = d.PreviewText,
+                            body = d.PreviewText,
+                            type = d.TemplateType,
+                            emoji = d.MoodEmoji,
+                            images = d.ImageCount,
+                            drawings = d.DrawingCount,
+                            shared = d.IsShared,
+                            reactions = d.Reactions
+                    })
+            ));
+    </script>
+    <script src="~/js/diary/diary_index.js" asp-append-version="true"></script>
+}
