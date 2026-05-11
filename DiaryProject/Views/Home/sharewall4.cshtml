@@ -35,7 +35,6 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "日常時光 - 分享牆";
-    ViewData["ActiveNav"] = "sharewall";
 }
 
 @section Styles {
@@ -43,50 +42,51 @@
     <link rel="stylesheet" href="~/css/Analyze_Share/sharewall4.css" asp-append-version="true">
 }
 
-<div class="breadcrumb">首頁 > 分享牆</div>
+<div class="sw-page-card">
 
-<section class="search-section">
-    <div class="search-container">
-        <button class="back-btn">←</button>
-        <div class="search-bar">
+    <h1 class="sw-title">分享牆</h1>
+
+    <!-- ── 區域 1：搜尋 + 標籤 + 發布 ── -->
+    <div class="sw-search-section">
+        <div class="sw-search-row">
             <!-- 即時搜尋：每次 input 事件觸發 handleSearch(1)（main.js 綁定） -->
-            <input type="text" id="search-input" placeholder="搜尋 標題、內容、標籤...">
+            <input type="text" id="search-input" class="sw-search-input" placeholder="搜尋 標題、內容、標籤...">
+            <!-- 分類篩選按鈕列：由 render/categories.js 動態產生 -->
+            <div id="category-container" class="category-tags"></div>
+            <!-- ⚠️ TODO: 尚未實作 -->
+            <button class="publish-btn">發布日記</button>
         </div>
     </div>
-    <!-- 分類篩選按鈕列：由 render/categories.js 動態產生 -->
-    <div id="category-container" class="category-tags"></div>
-</section>
 
-<div class="action-bar">
-    <!-- ⚠️ TODO: 尚未實作 -->
-    <button class="secondary-btn">我的分享</button>
-    <!-- ⚠️ TODO: 尚未實作 -->
-    <button class="primary-btn">⊕ 發布日記</button>
-</div>
+    <!-- ── 區域 2 + 3：文章列表 | 文章詳情 ── -->
+    <div class="layout-grid" id="sharewall-layout">
 
-<div class="filter-bar">
-    <div class="filter-group">
-        <span>類別</span>
-        <!-- 目前選取的分類顯示（點擊可重置為「全部」） -->
-        <span class="filter-tag active" id="current-filter-display" onclick="filterByCategory('全部')"
-              style="cursor:pointer">全部</span>
+        <!-- 區域 2：排序 + 文章列表 -->
+        <div class="sw-list-section">
+            <div class="sort-bar">
+                <div class="filter-group">
+                    <span class="filter-tag active" id="current-filter-display"
+                          onclick="filterByCategory('全部')" style="cursor:pointer">全部</span>
+                </div>
+                <div class="filter-group">
+                    <span>排序</span>
+                    <span class="filter-tag" id="sort-latest" onclick="setSortOrder('latest')">最新</span>
+                    <span class="filter-tag" id="sort-hot" onclick="setSortOrder('hot')">熱門</span>
+                </div>
+            </div>
+            <!-- 貼文列表：由 render/postList.js 動態渲染 -->
+            <div class="post-list" id="post-list"></div>
+        </div>
+
+        <!-- 區域 3：文章詳情面板（點擊貼文後由 render/detail.js 顯示） -->
+        <aside class="detail-panel" id="detail-panel"></aside>
+
     </div>
-    <div class="filter-group">
-        <span>排序</span>
-        <!-- sort-latest / sort-hot：main.js 綁定 click 事件 -->
-        <span class="filter-tag" id="sort-latest" onclick="setSortOrder('latest')">最新</span>
-        <span class="filter-tag" id="sort-hot" onclick="setSortOrder('hot')">熱門</span>
-    </div>
-</div>
 
-<div class="layout-grid" id="sharewall-layout">
-    <!-- 左側貼文列表：由 render/postList.js 動態渲染 -->
-    <div class="post-list" id="post-list"></div>
-
-    <!-- 右側詳情面板：點擊貼文後由 render/detail.js 顯示 -->
-    <aside class="detail-panel" id="detail-panel"></aside>
 </div>
 
 @section Scripts {
     <script type="module" src="~/js/Analyze_Share/main.js" asp-append-version="true"></script>
 }
+
+

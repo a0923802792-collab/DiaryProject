@@ -1,20 +1,27 @@
 /* =====================================================================
-   layout.css — 全站共用樣式
-   包含：CSS 變數、Reset、Body、Sidebar
+   layout.css — 全站共用樣式（Moody 風格）
+   包含：CSS 變數、Reset、Body、TopBar、SideNav、點擊火花 Canvas
    各頁面只需引入此檔 + 自己的頁面 CSS，不需重複定義以下內容
    ===================================================================== */
 
-/* ── CSS 變數 ─────────────────────────────────────── */
+/* ── 色票變數 ─────────────────────────────────────── */
 :root {
-    --bg-color: #fcfcfc;
-    --sidebar-bg: #ffffff;
-    --sidebar-border: #e0e0e0;
-    --sidebar-width: 180px;
-    --accent-yellow: #fdf3d0;
-    --card-border: #cccccc;
-    --text-dark: #333333;
-    --text-gray: #666666;
-    --radius: 12px;
+    --mo-cream:  #FBF9EA;   /* 奶油白 — 卡片底色 */
+    --mo-teal:   #AAD0C6;   /* 淺灰藍 — 裝飾 */
+    --mo-olive:  #A1A34E;   /* 橄欖綠 — 主要按鈕、TopBar */
+    --mo-brown:  #786C56;   /* 深褐咖 — 主要文字 */
+    --mo-black:  #000000;   /* 純黑   — 強調邊框 */
+    --mo-azure:  #007FFF;   /* 天空藍 — 系統選取 */
+    --mo-citron: #D4E2A5;   /* 淺綠   — Logo Hover */
+    --mo-bg:     #FDFBF7;   /* 頁面底色 */
+
+    --topbar-height: 72px;
+
+    /* 共用語意色票（供分享牆、成就等頁面使用） */
+    --accent-yellow: #EBD87F;   /* 麵包屑背景 */
+    --card-border:   #e5e7eb;   /* 卡片邊框 */
+    --text-gray:     #9ca3af;   /* 次要文字 */
+    --radius:        12px;      /* 卡片圓角 */
 }
 
 /* ── Reset ───────────────────────────────────────── */
@@ -26,112 +33,285 @@
     box-sizing: border-box;
 }
 
-/* ── Body ────────────────────────────────────────── */
+/* ── Body（網格底紋 + 全高） ─────────────────────── */
 body {
     font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-    display: flex;
+    background-color: var(--mo-bg);
+    background-image:
+        linear-gradient(to right,  #e5e7eb 1px, transparent 1px),
+        linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--mo-brown);
     height: 100vh;
-    background-color: var(--bg-color);
-    color: var(--text-dark);
     overflow: hidden;
 }
 
-/* ── Sidebar 外框 ─────────────────────────────────── */
-.sidebar {
-    width: var(--sidebar-width);
-    flex-shrink: 0;
-    border-right: 1px solid var(--sidebar-border);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px 16px;
-    background: var(--sidebar-bg);
+/* ── 點擊火花 Canvas ─────────────────────────────── */
+#spark-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
 }
 
-/* ── Logo ────────────────────────────────────────── */
-.sidebar .logo {
-    font-size: 1.1rem;
-    font-weight: bold;
-    background: var(--accent-yellow);
-    padding: 4px 10px;
-    border-radius: 20px;
-    display: inline-block;
-    margin-bottom: 24px;
+/* ── 整體容器（垂直排列） ────────────────────────── */
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ── TopBar ───────────────────────────────────────── */
+.topbar {
+    height: var(--topbar-height);
+    flex-shrink: 0;
+    background: var(--mo-olive);
+    border-bottom: 1px solid var(--mo-black);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 100;
+}
+
+.topbar-logo {
+    font-size: 1.875rem;
+    font-weight: 700;
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--mo-black);
+    text-decoration: none;
+    transition: color 0.2s;
     white-space: nowrap;
 }
 
-/* ── 導覽選單 ─────────────────────────────────────── */
-.sidebar nav {
-    flex: 1;
+.topbar-logo:hover {
+    color: var(--mo-citron);
 }
 
-.sidebar .nav-item {
-    padding: 10px 4px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    color: var(--text-dark);
-    border-radius: 8px;
-    transition: background 0.15s;
-    list-style: none;
+.topbar-search {
     display: flex;
     align-items: center;
-    gap: 6px;
+    background: #ffffff;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    padding: 0 1.25rem;
+    width: min(700px, 45vw);
+    height: 50px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+    transition: border-color 0.2s;
 }
 
-.sidebar .nav-item:hover {
-    background: var(--accent-yellow);
+.topbar-search:focus-within {
+    border-color: var(--mo-azure);
 }
 
-.sidebar .nav-item.active {
-    font-weight: bold;
-    background: var(--accent-yellow);
-}
-
-.sidebar .nav-item a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
+.topbar-search input {
+    margin-left: 0.75rem;
+    border: none;
+    outline: none;
     width: 100%;
+    font-size: 0.875rem;
+    background: transparent;
+    color: #374151;
 }
 
-/* ── 底部獎勵按鈕 ──────────────────────────────────── */
-.sidebar .sidebar-footer {
-    border-top: 1px solid var(--sidebar-border);
-    padding-top: 12px;
+.topbar-search input::placeholder {
+    color: #9ca3af;
 }
 
-.sidebar .reward-btn {
+.topbar-actions {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
+    gap: 1rem;
 }
 
-.sidebar .reward-icon {
-    width: 52px;
-    height: 52px;
-    background: var(--accent-yellow);
-    border-radius: 50%;
+/* 圖示按鈕（鈴鐺 / 頭像） */
+.icon-btn {
+    width: 2.5rem;
+    height: 2.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
-    transition: background 0.2s;
-    margin: 0 auto 4px;
+    background: #ffffff;
+    border: 1px solid var(--mo-black);
+    border-radius: 9999px;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: color 0.2s;
+    position: relative;
+    flex-shrink: 0;
 }
 
-.sidebar .reward-btn:hover .reward-icon {
-    background: #ffe066;
+.icon-btn:hover {
+    color: var(--mo-olive);
 }
 
-.sidebar .reward-label {
-    font-size: 0.8rem;
-    font-weight: bold;
-    letter-spacing: 3px;
-    color: var(--text-dark);
+/* 通知紅點 */
+.notif-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: .75rem;
+    height: .75rem;
+    background: #f87171;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+/* 個人選單下拉 */
+.profile-menu-wrap {
+    position: relative;
+}
+
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 12rem;
+    background: #ffffff;
+    border: 1px solid var(--mo-black);
+    border-radius: .75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+    padding: .5rem 0;
+    z-index: 200;
+}
+
+.profile-dropdown.open {
+    display: block;
+}
+
+.profile-dropdown a,
+.profile-dropdown .dropdown-btn {
+    display: block;
+    width: 100%;
+    padding: .5rem 1.5rem;
+    font-size: .875rem;
+    color: #4b5563;
+    text-decoration: none;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.profile-dropdown a:hover {
+    background: #f3f4f6;
+}
+
+.profile-dropdown .dropdown-btn:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.dropdown-divider {
+    border-top: 1px solid #e5e7eb;
+    margin: .25rem 0;
+}
+
+/* ── 主體區域（SideNav + 頁面內容並排） ─────────── */
+.app-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 2rem 2rem;
+    overflow: hidden;
+}
+
+/* ── SideNav 外框（flex 垂直，讓星星推到底） ──────── */
+.sidenav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding-bottom: .5rem;
+}
+
+/* 膠囊容器（圖示群） */
+.sidenav-inner {
+    width: 4.25rem;
+    background: var(--mo-cream);
+    border-radius: 2rem;
+    border: 1px solid var(--mo-black);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 0;
+    gap: .25rem;
+}
+
+/* 個別圖示連結 */
+.nav-icon {
+    width: 3.5rem;
+    height: auto;
+    padding: .45rem .25rem .35rem;
+    border-radius: .65rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #9ca3af;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.nav-icon:hover {
+    background: var(--mo-olive);
+    color: var(--mo-brown);
+    transform: scale(1.05) translateY(-1px);
+}
+
+.nav-icon.active {
+    background: var(--mo-olive);
+    color: #3d5a10;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+}
+
+/* 導覽文字標籤 */
+.nav-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* 底部成就星星按鈕 */
+.nav-icon-star {
+    margin-top: auto;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: var(--mo-brown);
+    border: 1px solid var(--mo-black);
+    color: #ffffff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.nav-icon-star:hover {
+    background: #ffffff;
+    color: var(--mo-brown);
+    transform: scale(1.1) translateY(-2px);
+}
+
+.nav-icon-star.active {
+    background: var(--mo-cream);
+    color: #3d5a10;
 }
 
 /* ── 主內容區（各頁面自己加 padding / overflow 等細節） */

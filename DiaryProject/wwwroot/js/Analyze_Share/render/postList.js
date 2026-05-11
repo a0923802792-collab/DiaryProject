@@ -6,6 +6,19 @@
  */
 import { hasReacted } from '../handlers/reaction.js';
 
+function avatarText(nickname) {
+    const name = String(nickname || '匿名').trim();
+    return Array.from(name)[0] || '匿';
+}
+
+function escAttr(s) {
+    return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 /**
  * 重新渲染貼文列表
  *
@@ -40,8 +53,9 @@ export function renderPostList(posts = [], append = false) {
     const html = posts.map(post => `
         <article class="post-card" onclick="showDetail(${post.id})">
             <div class="post-meta">
-                <div class="user-avatar"></div>
+                <div class="user-avatar">${avatarText(post.nickname)}</div>
                 <span class="post-date">📅 ${post.date}</span>
+                <span class="post-id">#${post.id}</span>
             </div>
             <div class="post-content">
                 <div class="text-area">
@@ -53,20 +67,21 @@ export function renderPostList(posts = [], append = false) {
                         ${post.tags.map(t => `<span class="post-tag">${t}</span>`).join('')}
                     </div>
                 </div>
-                <!-- 有圖才顯示第一張縮圖，無圖不佔空間 -->
+                <!-- 有圖才顯示第一張縮圖；多張時在右下角顯示總張數 -->
                 ${post.images && post.images.length > 0
-            ? `<div class="img-preview"><img src="${post.images[0]}" alt="preview"></div>`
+            ? `<div class="img-preview">
+                    <img src="${post.images[0]}" alt="preview">
+                    ${post.images.length > 1 ? `<span class="img-count-badge">${post.images.length}</span>` : ''}
+                  </div>`
             : ''}
             </div>
             <div class="post-actions">
-                <!-- 回應按鈕：stopPropagation 防止觸發卡片的 showDetail -->
-                <button onclick="event.stopPropagation()">回應</button>
                 <!-- 各反應按鈕：已按過的加 disabled 防止重複，數字來自後端 -->
-                <button onclick="addReaction(event,${post.id},'like')"    ${hasReacted(post.id, 'like') ? 'disabled style="opacity:.45"' : ''}>👍 ${post.reactions.like}</button>
-                <button onclick="addReaction(event,${post.id},'peace')"   ${hasReacted(post.id, 'peace') ? 'disabled style="opacity:.45"' : ''}>😌 ${post.reactions.peace}</button>
-                <button onclick="addReaction(event,${post.id},'hug')"     ${hasReacted(post.id, 'hug') ? 'disabled style="opacity:.45"' : ''}>🤗 ${post.reactions.hug}</button>
-                <button onclick="addReaction(event,${post.id},'empathy')" ${hasReacted(post.id, 'empathy') ? 'disabled style="opacity:.45"' : ''}>🥺 ${post.reactions.empathy}</button>
-                <button onclick="addReaction(event,${post.id},'cheer')"   ${hasReacted(post.id, 'cheer') ? 'disabled style="opacity:.45"' : ''}>💪 ${post.reactions.cheer}</button>
+                <button class="reaction-btn" onclick="addReaction(event,${post.id},'like')"    ${hasReacted(post.id, 'like')    ? 'disabled data-reacted' : ''}><img src="/icons/thumb_up_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"         class="reaction-icon" alt="like">    ${post.reactions.like}</button>
+                <button class="reaction-btn" onclick="addReaction(event,${post.id},'peace')"   ${hasReacted(post.id, 'peace')   ? 'disabled data-reacted' : ''}><img src="/icons/sentiment_excited_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg" class="reaction-icon" alt="peace">   ${post.reactions.peace}</button>
+                <button class="reaction-btn" onclick="addReaction(event,${post.id},'hug')"     ${hasReacted(post.id, 'hug')     ? 'disabled data-reacted' : ''}><img src="/icons/heart_smile_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"       class="reaction-icon" alt="hug">     ${post.reactions.hug}</button>
+                <button class="reaction-btn" onclick="addReaction(event,${post.id},'empathy')" ${hasReacted(post.id, 'empathy') ? 'disabled data-reacted' : ''}><img src="/icons/sentiment_sad_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"    class="reaction-icon" alt="empathy"> ${post.reactions.empathy}</button>
+                <button class="reaction-btn" onclick="addReaction(event,${post.id},'cheer')"   ${hasReacted(post.id, 'cheer')   ? 'disabled data-reacted' : ''}><img src="/icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"             class="reaction-icon" alt="cheer">   ${post.reactions.cheer}</button>
             </div>
         </article>
     `).join('');

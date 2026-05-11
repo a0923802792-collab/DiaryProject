@@ -31,7 +31,6 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "數據圖表";
-    ViewData["ActiveNav"] = "chart";
 }
 
 @section Styles {
@@ -39,13 +38,19 @@
     <link rel="stylesheet" href="~/css/Analyze_Share/chart.css" asp-append-version="true">
     }
 
-<div class="analyze-share-host">
     <div class="chart-page">
 
         <!-- ── 頁首 ── -->
         <div class="chart-header">
-            <h1>📊 數據圖表</h1>
+            <h1>數據圖表</h1>
             <p>你的日記統計一覽，看見生活的節奏與脈絡</p>
+        </div>
+
+        <!-- ── 分頁切換列 ── -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="diary">📖 日記分析</button>
+            <button class="tab-btn" data-tab="task">✅ 任務打卡</button>
+            <button class="tab-btn" data-tab="history">📊 任務歷史</button>
         </div>
 
         <!-- ── 時間篩選器 ── -->
@@ -68,12 +73,6 @@
             </div>
         </div>
         <div class="filter-info" id="filter-info" style="display:none"></div>
-
-        <!-- ── 分頁切換列 ── -->
-        <div class="tab-bar">
-            <button class="tab-btn active" data-tab="diary">📖 日記分析</button>
-            <button class="tab-btn" data-tab="task">✅ 任務打卡</button>
-        </div>
 
         <!-- ════════════════════════════════════════════ -->
         <!-- 分頁 1：日記分析                              -->
@@ -177,8 +176,17 @@
                 </div>
             </div>
 
-            <!-- Row 5：壓力分布 + 睡眠分布 -->
-            <div class="chart-grid">
+            <!-- Row 5：活力分布 + 壓力分布 + 睡眠分布 -->
+            <div class="chart-grid chart-grid-3">
+                <div class="chart-card">
+                    <h2><span class="chart-icon">⚡</span> 活力指數分布（1–10）</h2>
+                    <div class="chart-wrap">
+                        <div class="chart-loading">
+                            <div class="spinner"></div><span>載入中…</span>
+                        </div>
+                        <canvas id="chart-energy-dist"></canvas>
+                    </div>
+                </div>
                 <div class="chart-card">
                     <h2><span class="chart-icon">😤</span> 壓力指數分布（1–10）</h2>
                     <div class="chart-wrap">
@@ -223,14 +231,46 @@
                     <span class="s-value" id="st-complete">…</span>
                     <span class="s-label">正常打卡</span>
                 </div>
-                <div class="summary-card">
-                    <span class="s-icon">🔄</span>
-                    <span class="s-value" id="st-makeup">…</span>
-                    <span class="s-label">補打卡</span>
+            </div>
+
+            <!-- KPI 排行 -->
+            <div class="section-divider"><span>🏆 任務 KPI 排行</span></div>
+
+            <div class="ranking-grid" id="task-ranking-grid">
+                <div class="ranking-card ranking-top">
+                    <div class="ranking-header">
+                        <span class="ranking-medal">🥇</span>
+                        <span>打卡次數最多</span>
+                    </div>
+                    <ol class="ranking-list" id="rank-top-checkin"></ol>
+                </div>
+                <div class="ranking-card ranking-bottom">
+                    <div class="ranking-header">
+                        <span class="ranking-medal">📉</span>
+                        <span>打卡次數最少</span>
+                    </div>
+                    <ol class="ranking-list" id="rank-bottom-checkin"></ol>
+                </div>
+                <div class="ranking-card ranking-top">
+                    <div class="ranking-header">
+                        <span class="ranking-medal">⭐</span>
+                        <span>完成率最高</span>
+                    </div>
+                    <ol class="ranking-list" id="rank-top-rate"></ol>
+                </div>
+                <div class="ranking-card ranking-bottom">
+                    <div class="ranking-header">
+                        <span class="ranking-medal">⚠️</span>
+                        <span>完成率最低</span>
+                    </div>
+                    <ol class="ranking-list" id="rank-bottom-rate"></ol>
                 </div>
             </div>
 
-            <!-- 任務 Row 1：打卡時間序列 + 打卡類型 -->
+            <!-- 趨勢圖表 -->
+            <div class="section-divider"><span>📈 打卡趨勢</span></div>
+
+            <!-- Row 1：打卡時間序列 + 週目標達成率 -->
             <div class="chart-grid">
                 <div class="chart-card">
                     <h2 id="title-task-timeseries"><span class="chart-icon">📅</span> 每月打卡次數</h2>
@@ -243,37 +283,92 @@
                     <div id="rs-task-timeseries" class="range-slider" style="display:none"></div>
                 </div>
                 <div class="chart-card">
-                    <h2><span class="chart-icon">🍩</span> 打卡類型分布</h2>
+                    <h2><span class="chart-icon">🎯</span> 週目標達成率（週一～週日）</h2>
                     <div class="chart-wrap">
                         <div class="chart-loading">
                             <div class="spinner"></div><span>載入中…</span>
                         </div>
-                        <canvas id="chart-task-type"></canvas>
+                        <canvas id="chart-task-weekly-goal"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- 任務 Row 2：各任務打卡 -->
-            <div class="chart-grid single">
+            <!-- Row 2：打卡星期分布 + 任務類型比例 -->
+            <div class="chart-grid">
                 <div class="chart-card">
-                    <h2><span class="chart-icon">🏆</span> 各任務打卡次數</h2>
-                    <div class="chart-wrap tall">
+                    <h2><span class="chart-icon">📆</span> 打卡星期分布</h2>
+                    <div class="chart-wrap">
                         <div class="chart-loading">
                             <div class="spinner"></div><span>載入中…</span>
                         </div>
-                        <canvas id="chart-task-per-task"></canvas>
+                        <canvas id="chart-task-weekday"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h2><span class="chart-icon">🔁</span> 任務類型比例</h2>
+                    <div class="chart-wrap">
+                        <div class="chart-loading">
+                            <div class="spinner"></div><span>載入中…</span>
+                        </div>
+                        <canvas id="chart-task-rhythm"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- Row 3：打卡時段分布（全寬） -->
+            <div class="chart-grid single">
+                <div class="chart-card">
+                    <h2><span class="chart-icon">🕐</span> 打卡時段分布（0–23 時）</h2>
+                    <div class="chart-wrap">
+                        <div class="chart-loading">
+                            <div class="spinner"></div><span>載入中…</span>
+                        </div>
+                        <canvas id="chart-task-hour"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 隱藏的 canvas（chart-task-type 仍需存在供 JS 初始化，但不顯示） -->
+            <canvas id="chart-task-type" style="display:none"></canvas>
+
         </div><!-- /tab-task -->
 
+        <!-- ════════════════════════════════════════════ -->
+        <!-- 分頁 3：任務歷史                              -->
+        <!-- ════════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-history" style="display:none">
+
+            <!-- 控制列：搜尋 + 狀態篩選 + 類型篩選 -->
+            <div class="th-controls">
+                <div class="th-search-wrap">
+                    <input type="search" id="th-search" class="th-search"
+                           placeholder="🔍 搜尋任務名稱…" autocomplete="off">
+                </div>
+                <div class="th-filter-group">
+                    <button class="th-filter active" data-status="all">全部</button>
+                    <button class="th-filter" data-status="Active">進行中</button>
+                    <button class="th-filter" data-status="Archived">已封存</button>
+                </div>
+                <div class="th-filter-group">
+                    <button class="th-type active" data-type="all">全類型</button>
+                    <button class="th-type" data-type="Daily">每日任務</button>
+                    <button class="th-type" data-type="NonDaily">非每日</button>
+                </div>
+                <span class="th-count" id="th-count"></span>
+            </div>
+
+            <!-- 任務列表（JS 動態填入）-->
+            <div id="th-task-list">
+                <div class="th-loading">⌛ 載入中…</div>
+            </div>
+
+        </div><!-- /tab-history -->
+
     </div>
-</div>
 
     @section Scripts {
         <!-- Chart.js 以 UMD 格式載入（掛到 window.Chart），需先於 type=module 載入 -->
-<script src="~/js/Analyze_Share/chart.umd.min.js"></script>
+        <script src="~/js/Analyze_Share/chart.umd.min.js"></script>
         <!-- type=module：啟用 ES Module import/export，並自動 defer -->
-<script type="module" src="~/js/Analyze_Share/chart-main.js" asp-append-version="true"></script>
+        <script type="module" src="~/js/Analyze_Share/chart-main.js" asp-append-version="true"></script>
     }

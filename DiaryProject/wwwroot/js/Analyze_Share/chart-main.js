@@ -22,21 +22,15 @@ import {
     clearActiveBtn, clearCustomInputs,
     updateFilterInfo
 } from './chart/filter.js';
-import { renderAll } from './chart/render.js';
+import { renderAll, renderTaskList, renderTaskDetail } from './chart/render.js';
 
 // ── 模組層級狀態 ──────────────────────────────────────────────
 /** 最近一次從後端取回的完整資料，供分頁切換補繪使用 */
-let _lastData = null;
+let _lastData     = null;
+/** 任務歷史列表快取（只 fetch 一次） */
+let _taskListData = null;
 
 // ── 核心函式：載入圖表資料 ────────────────────────────────────
-
-/**
- * 組裝篩選參數、向後端取資料、更新篩選提示、繪圖
- *
- * @param {string|null} preset - 快速預設：'week'|'month'|'3month'|'6month'|'year'|null
- * @param {string|null} from   - 自訂起始日期 'YYYY-MM-DD'
- * @param {string|null} to     - 自訂結束日期 'YYYY-MM-DD'
- */
 async function loadChart(preset, from, to) {
     try {
         const data = await fetchChartData(preset, from, to);
@@ -51,12 +45,46 @@ async function loadChart(preset, from, to) {
     }
 }
 
+// ── 任務歷史：載入列表 ────────────────────────────────────────
+async function loadTaskHistory() {
+    if (_taskListData) {
+        renderTaskList(_taskListData.tasks, loadTaskDetail);
+        return;
+    }
+    const listEl = document.getElementById('th-task-list');
+    if (listEl) listEl.innerHTML = '<div class="th-loading">⏳ 載入中…</div>';
+    try {
+        const resp = await fetch('/api/chart/task-list');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        _taskListData = await resp.json();
+        renderTaskList(_taskListData.tasks, loadTaskDetail);
+    } catch (e) {
+        console.error('任務列表載入失敗', e);
+        const listEl2 = document.getElementById('th-task-list');
+        if (listEl2) listEl2.innerHTML = '<div class="th-error">⚠️ 任務列表載入失敗，請重新整理</div>';
+    }
+}
+
+// ── 任務歷史：載入單一任務詳細 ────────────────────────────────
+async function loadTaskDetail(taskId, containerEl) {
+    containerEl.innerHTML = '<div class="th-loading">⏳ 載入中…</div>';
+    try {
+        const resp = await fetch(`/api/chart/task-detail/${taskId}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const detail = await resp.json();
+        renderTaskDetail(detail, containerEl);
+    } catch (e) {
+        console.error('任務詳細載入失敗', e);
+        containerEl.innerHTML = '<div class="th-error">⚠️ 詳細資料載入失敗</div>';
+    }
+}
+
 // ── 初始化（ES Module 自動 defer，DOM 一定已載入）────────────
 
 // ── 分頁切換 ──────────────────────────────────────────────────
-// 切換分頁時：隱藏其他面板 → 顯示目標面板 → 補繪圖表
-// 補繪原因：canvas 在 display:none 時尺寸為 0，
-//   Chart.js 若在那時繪製，會產生尺寸錯誤，需在顯示後重繪
+const _filterBar  = document.querySelector('.filter-bar');
+const _filterInfo = document.getElementById('filter-info');
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -65,9 +93,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.querySelectorAll('.tab-panel').forEach(p => {
             p.style.display = p.id === `tab-${target}` ? '' : 'none';
         });
-        // requestAnimationFrame 確保 DOM 已完成顯示再補繪
-        if (_lastData) {
-            requestAnimationFrame(() => renderAll(_lastData));
+
+        if (target === 'history') {
+            // 隱藏日期篩選器（不適用於任務歷史）
+            if (_filterBar)  _filterBar.style.display  = 'none';
+            if (_filterInfo) _filterInfo.style.display = 'none';
+            loadTaskHistory();
+        } else {
+            // 恢復日期篩選器
+            if (_filterBar)  _filterBar.style.display  = '';
+            // requestAnimationFrame 確保 DOM 已顯示再補繪
+            if (_lastData) requestAnimationFrame(() => renderAll(_lastData));
         }
     });
 });
@@ -97,7 +133,29 @@ document.getElementById('filter-clear')?.addEventListener('click', () => {
     loadChart(null, null, null);
 });
 
+// ── 任務歷史篩選器 ────────────────────────────────────────────
+function reRenderHistory() {
+    if (_taskListData) renderTaskList(_taskListData.tasks, loadTaskDetail);
+}
+
+document.getElementById('th-search')?.addEventListener('input', reRenderHistory);
+
+document.querySelectorAll('.th-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.th-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        reRenderHistory();
+    });
+});
+
+document.querySelectorAll('.th-type').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.th-type').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        reRenderHistory();
+    });
+});
+
 // ── 預設載入（全部時間範圍）──────────────────────────────────
 setActivePreset('all');
 loadChart(null, null, null);
-

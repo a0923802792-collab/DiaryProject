@@ -1,0 +1,1 @@
+import{a as e,i as t,o as n,r,t as i}from"./src-DimkJCFz.js";var a=n(e(),1),o=n(t(),1),s=r();o.createRoot(document.getElementById(`front-home-root`)).render((0,s.jsx)(a.StrictMode,{children:(0,s.jsx)(i,{})}));

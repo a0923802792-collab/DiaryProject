@@ -7,6 +7,19 @@ import { setCurrentDetailId } from '../store.js';
 let _lightboxImages = [];
 let _lightboxIndex = 0;
 
+function avatarText(nickname) {
+    const name = String(nickname || '匿名').trim();
+    return Array.from(name)[0] || '匿';
+}
+
+function escAttr(s) {
+    return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 /** 開啟燈箱，顯示第 index 張圖 */
 function openLightbox(images, index) {
     _lightboxImages = images;
@@ -78,8 +91,9 @@ export function renderDetail(post) {
 
     detailPanel.innerHTML = `
         <div class="post-meta">
-            <div class="user-avatar"></div>
+            <div class="user-avatar">${avatarText(post.nickname)}</div>
             <span class="post-date">📅 ${post.date}</span>
+            <span class="post-id">#${post.id}</span>
         </div>
         <div class="detail-body">
             <h2>${post.title}</h2>
@@ -97,12 +111,11 @@ export function renderDetail(post) {
             <p>${post.content}</p>
         </div>
         <div class="detail-footer">
-            <span class="count-tag">回應</span>
-            <span class="count-tag">👍 ${post.reactions.like}</span>
-            <span class="count-tag">😌 ${post.reactions.peace}</span>
-            <span class="count-tag">🤗 ${post.reactions.hug}</span>
-            <span class="count-tag">🥺 ${post.reactions.empathy}</span>
-            <span class="count-tag">💪 ${post.reactions.cheer}</span>
+            <span class="count-tag"><img src="/icons/thumb_up_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"         class="reaction-icon" alt="like">     ${post.reactions.like}</span>
+            <span class="count-tag"><img src="/icons/sentiment_excited_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg" class="reaction-icon" alt="peace">    ${post.reactions.peace}</span>
+            <span class="count-tag"><img src="/icons/heart_smile_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"       class="reaction-icon" alt="hug">      ${post.reactions.hug}</span>
+            <span class="count-tag"><img src="/icons/sentiment_sad_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"    class="reaction-icon" alt="empathy">  ${post.reactions.empathy}</span>
+            <span class="count-tag"><img src="/icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"             class="reaction-icon" alt="cheer">    ${post.reactions.cheer}</span>
         </div>
     `;
 

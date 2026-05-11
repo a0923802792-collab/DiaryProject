@@ -66,6 +66,7 @@ export function renderAll(data) {
         drawMoodTrend(data.moodTrend);
         drawStressDist(data.stressDistribution);
         drawSleepDist(data.sleepDistribution);
+        drawEnergyDist(data.energyDistribution);
     } catch (e) {
         console.error('[diary renderAll]', e);
     }
@@ -80,8 +81,12 @@ export function renderAll(data) {
     }
     try {
         drawTaskTimeSeries(data.taskTimeSeries);
-        drawTaskPerTask(data.taskPerTask);
+        drawTaskRankings(data.taskPerTask.rankings);
         drawTaskType(data.taskCheckinType);
+        drawTaskWeekday(data.taskWeekdayDist);
+        drawTaskRhythm(data.taskRhythmDist);
+        drawTaskHour(data.taskHourDist);
+        drawTaskWeeklyGoal(data.taskWeeklyGoal);
     } catch (e) { console.error('[task renderAll]', e); }
     if (wasHidden) {
         taskPanel.style.display = 'none';
@@ -242,25 +247,44 @@ function drawTypeDonut({ labels, data }) {
  * x 軸最大值設為最大值的 2 倍，讓短的條也清晰可見
  */
 function drawCategory({ labels, data }) {
-    const maxVal = Math.max(...data, 1);
-    const xMax = Math.ceil(maxVal * 2);
-    const opts = baseOptions('篇', true);
-    opts.indexAxis = 'y';
-    opts.scales.x = { ...opts.scales.x, max: xMax };
+    const total = data.reduce((s, v) => s + v, 0) || 1;
 
     makeChart('chart-category', {
-        type: 'bar',
+        type: 'pie',
         data: {
             labels,
             datasets: [{
-                label: '篇數',
                 data,
                 backgroundColor: PALETTE,
-                borderRadius: 6,
-                borderWidth: 0,
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 10,
             }]
         },
-        options: opts
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        color: '#5a6474',
+                        font: { size: 12 },
+                        padding: 12,
+                        boxWidth: 14,
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const pct = ((ctx.raw / total) * 100).toFixed(1);
+                            return ` ${ctx.label}：${ctx.raw} 篇（${pct}%）`;
+                        }
+                    }
+                }
+            }
+        }
     });
 }
 
@@ -334,6 +358,24 @@ function drawMoodTrend({ labels, energy, stress, sleep }) {
  * 壓力分布（長條圖，1-10 分各有幾天）
  * 顏色從暖橘漸層，分數越高顏色越深
  */
+/**
+ * 活力指數分布（長條圖，1-10 分各有幾天）
+ * 顏色從淡綠到深綠漸層
+ */
+function drawEnergyDist({ labels, data }) {
+    makeChart('chart-energy-dist', {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{ label: '天數', data, backgroundColor: data.map((_, i) => `hsl(${130 + i * 8}, 60%, 55%)`), borderRadius: 6, borderWidth: 0 }]
+        },
+        options: {
+            ...baseOptions('天', false),
+            plugins: { ...baseOptions().plugins, tooltip: { callbacks: { label: ctx => ` 活力 ${ctx.label} 分：${ctx.raw} 天` } } }
+        }
+    });
+}
+
 function drawStressDist({ labels, data }) {
     makeChart('chart-stress-dist', {
         type: 'bar',
@@ -412,6 +454,43 @@ function drawTaskPerTask({ labels, data }) {
     });
 }
 
+/** 打卡次數 & 完成率 前 / 後三名排行卡片 */
+function drawTaskRankings(rankings) {
+    if (!rankings) return;
+
+    function rankNumClass(i) {
+        return i === 0 ? 'r1' : i === 1 ? 'r2' : 'r3';
+    }
+
+    function fillCheckinList(listId, items) {
+        const el = document.getElementById(listId);
+        if (!el) return;
+        el.innerHTML = items.map((r, i) => `
+            <li>
+                <span class="rank-num ${rankNumClass(i)}">${i + 1}</span>
+                <span class="rank-title" title="${r.title}">${r.title}</span>
+                <span class="rank-val">${r.count} 次</span>
+            </li>`).join('');
+    }
+
+    function fillRateList(listId, items) {
+        const el = document.getElementById(listId);
+        if (!el) return;
+        el.innerHTML = items.map((r, i) => `
+            <li>
+                <span class="rank-num ${rankNumClass(i)}">${i + 1}</span>
+                <span class="rank-title" title="${r.title}">${r.title}</span>
+                <span class="rank-val">${r.rate}%</span>
+                <span class="rank-sub">&nbsp;(${r.complete}/${r.count})</span>
+            </li>`).join('');
+    }
+
+    fillCheckinList('rank-top-checkin',    rankings.topCheckin    ?? []);
+    fillCheckinList('rank-bottom-checkin', rankings.bottomCheckin ?? []);
+    fillRateList   ('rank-top-rate',       rankings.topRate       ?? []);
+    fillRateList   ('rank-bottom-rate',    rankings.bottomRate    ?? []);
+}
+
 /** 打卡類型分布（甜甜圈圖）：正常打卡 vs 補打卡 */
 function drawTaskType({ labels, data }) {
     makeChart('chart-task-type', {
@@ -434,6 +513,294 @@ function drawTaskType({ labels, data }) {
             }
         }
     });
+}
+
+// ── 打卡星期分布（週日–週六 七色漸層長條）────────────────────
+function drawTaskWeekday({ labels, data }) {
+    makeChart('chart-task-weekday', {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '打卡次數',
+                data,
+                backgroundColor: data.map((_, i) => `hsl(${80 + i * 35}, 50%, 58%)`),
+                borderRadius: 6,
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            ...baseOptions('次', false),
+            plugins: {
+                ...baseOptions('次', false).plugins,
+                tooltip: { callbacks: { label: ctx => ` 週${ctx.label}：${ctx.raw} 次` } }
+            }
+        }
+    });
+}
+
+// ── 任務類型比例（Daily / NonDaily 甜甜圈）───────────────────
+function drawTaskRhythm({ labels, data }) {
+    const total = data.reduce((s, v) => s + v, 0) || 1;
+    makeChart('chart-task-rhythm', {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: ['#A1A34E', '#AAD0C6'],
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 10,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '55%',
+            plugins: {
+                legend: { display: true, position: 'right',
+                    labels: { color: '#5a6474', font: { size: 12 }, padding: 12, boxWidth: 14 } },
+                tooltip: { callbacks: {
+                    label: ctx => ` ${ctx.label}：${ctx.raw} 個（${((ctx.raw / total) * 100).toFixed(1)}%）`
+                }}
+            }
+        }
+    });
+}
+
+// ── 打卡時段分布（0–23 時折線圖）────────────────────────────
+function drawTaskHour({ labels, data }) {
+    makeChart('chart-task-hour', {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: '打卡次數',
+                data,
+                borderColor: '#A1A34E',
+                backgroundColor: 'rgba(161,163,78,0.12)',
+                fill: true,
+                borderWidth: 2.5,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                tension: 0.4,
+            }]
+        },
+        options: {
+            ...baseOptions('次', false),
+            plugins: {
+                ...baseOptions('次', false).plugins,
+                tooltip: { callbacks: { label: ctx => ` ${ctx.label}：${ctx.raw} 次` } }
+            }
+        }
+    });
+}
+
+// ── 週目標達成率（週一～週日完成率）──────────────────────────
+function drawTaskWeeklyGoal({ labels, data }) {
+    makeChart('chart-task-weekly-goal', {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '完成率',
+                data,
+                backgroundColor: 'rgba(161,163,78,0.78)',
+                borderColor: '#A1A34E',
+                borderWidth: 1.5,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            ...baseOptions('%', false),
+            scales: {
+                ...baseOptions('%', false).scales,
+                y: {
+                    ...baseOptions('%', false).scales.y,
+                    min: 0,
+                    max: 100,
+                }
+            },
+            plugins: {
+                ...baseOptions('%', false).plugins,
+                legend: { display: false },
+                tooltip: { callbacks: {
+                    label: ctx => ` ${ctx.dataset.label}：${ctx.raw}%`
+                }}
+            }
+        }
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── 任務歷史列表渲染 ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+/** HTML 特殊字元跳脫（防 XSS） */
+function escHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+/**
+ * 渲染任務歷史列表
+ * @param {Array}    tasks        - /api/chart/task-list 回傳的 tasks 陣列
+ * @param {Function} onDetailLoad - 點擊任務展開時呼叫的 callback(taskId, containerEl)
+ */
+export function renderTaskList(tasks, onDetailLoad) {
+    const listEl = document.getElementById('th-task-list');
+    const countEl = document.getElementById('th-count');
+    if (!listEl) return;
+
+    if (!tasks || tasks.length === 0) {
+        listEl.innerHTML = '<div class="th-empty">目前沒有任何任務記錄</div>';
+        if (countEl) countEl.textContent = '';
+        return;
+    }
+
+    // ── 套用篩選 ──
+    const searchVal    = (document.getElementById('th-search')?.value ?? '').toLowerCase();
+    const statusFilter = document.querySelector('.th-filter.active')?.dataset.status ?? 'all';
+    const typeFilter   = document.querySelector('.th-type.active')?.dataset.type    ?? 'all';
+
+    const filtered = tasks.filter(t => {
+        if (searchVal && !t.title.toLowerCase().includes(searchVal)) return false;
+        if (statusFilter !== 'all' && t.status !== statusFilter)     return false;
+        if (typeFilter   !== 'all' && t.rhythmType !== typeFilter)   return false;
+        return true;
+    });
+
+    if (countEl) countEl.textContent = `共 ${filtered.length} 項`;
+
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="th-empty">沒有符合條件的任務</div>';
+        return;
+    }
+
+    const typeLabel   = r => r.rhythmType === 'Daily' ? '每日'   : '非每日';
+    const typeClass   = r => r.rhythmType === 'Daily' ? 'daily'  : 'nondaily';
+    const statusLabel = r => r.status === 'Active'    ? '進行中' : '已封存';
+    const statusClass = r => r.status === 'Active'    ? 'active' : 'archived';
+    const rateClass   = v => v >= 80 ? 'good' : v >= 50 ? 'mid' : 'low';
+
+    listEl.innerHTML = filtered.map(t => {
+        const fill = Math.min(100, t.completionRate);
+        return `
+        <div class="th-task-row" data-task-id="${t.taskId}">
+            <div class="th-task-main">
+                <div class="th-task-info">
+                    <span class="th-title">${escHtml(t.title)}</span>
+                    <span class="th-badge ${typeClass(t)}">${typeLabel(t)}</span>
+                    <span class="th-status ${statusClass(t)}">${statusLabel(t)}</span>
+                </div>
+                <div class="th-task-meta">
+                    ${t.weeklyTarget ? `<span class="th-meta-item">🎯 週目標 ${t.weeklyTarget} 次</span>` : ''}
+                    <span class="th-meta-item">📅 ${t.startDate ?? t.createdAt} 起</span>
+                </div>
+            </div>
+            <div class="th-task-stats">
+                <div class="th-stat-row">
+                    <span class="th-stat"><b>${t.totalCheckins}</b> 次打卡</span>
+                    <span class="th-stat th-rate ${rateClass(t.completionRate)}">${t.completionRate}% 完成率</span>
+                </div>
+                <div class="th-progress">
+                    <div class="th-progress-fill ${rateClass(fill)}" style="width:${fill}%"></div>
+                </div>
+            </div>
+            <span class="th-expand-icon" aria-hidden="true">›</span>
+        </div>
+        <div class="th-detail-panel" id="th-dp-${t.taskId}" style="display:none" data-loaded="0"></div>`;
+    }).join('');
+
+    // ── 展開 / 收合事件 ──
+    listEl.querySelectorAll('.th-task-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const taskId = row.dataset.taskId;
+            const panel  = document.getElementById(`th-dp-${taskId}`);
+            if (!panel) return;
+
+            const isOpen = panel.style.display !== 'none';
+            if (isOpen) {
+                panel.style.display = 'none';
+                row.querySelector('.th-expand-icon').textContent = '›';
+                row.classList.remove('expanded');
+            } else {
+                panel.style.display = '';
+                row.querySelector('.th-expand-icon').textContent = '⌄';
+                row.classList.add('expanded');
+
+                if (panel.dataset.loaded === '0') {
+                    panel.dataset.loaded = '1';
+                    onDetailLoad?.(taskId, panel);
+                }
+            }
+        });
+    });
+}
+
+/**
+ * 渲染單一任務詳細資料（嵌入 containerEl 內）
+ * @param {Object}      detail      - /api/chart/task-detail/{id} 回傳值
+ * @param {HTMLElement} containerEl - 目標容器 DOM 節點
+ */
+export function renderTaskDetail(detail, containerEl) {
+    const typeMap  = { Complete: '✅ 正常完成', Makeup: '📋 補打卡', Undo: '↩️ 取消打卡' };
+    const typeClass = { Complete: 'complete', Makeup: 'makeup', Undo: 'undo' };
+    const rateClass = v => v >= 80 ? 'good' : v >= 50 ? 'mid' : 'low';
+
+    containerEl.innerHTML = `
+        <div class="th-detail">
+            <!-- 統計卡片 -->
+            <div class="th-detail-stats">
+                <div class="th-ds-card">
+                    <span class="th-ds-val">${detail.totalCheckins}</span>
+                    <span class="th-ds-lbl">總打卡</span>
+                </div>
+                <div class="th-ds-card good">
+                    <span class="th-ds-val">${detail.completeCheckins}</span>
+                    <span class="th-ds-lbl">正常完成</span>
+                </div>
+                <div class="th-ds-card ${rateClass(detail.completionRate)}">
+                    <span class="th-ds-val">${detail.completionRate}%</span>
+                    <span class="th-ds-lbl">完成率</span>
+                </div>
+            </div>
+
+            <!-- 基本資訊 -->
+            <div class="th-detail-info">
+                <span>📅 建立：${detail.createdAt}</span>
+                <span>🔁 類型：${detail.rhythmType === 'Daily' ? '每日任務' : '非每日任務'}</span>
+                <span>🏷 狀態：${detail.status === 'Active' ? '進行中' : '已封存'}</span>
+                ${detail.weeklyTarget ? `<span>🎯 週目標：${detail.weeklyTarget} 次</span>` : ''}
+                ${detail.startDate    ? `<span>🚀 開始：${detail.startDate}</span>`              : ''}
+                ${detail.logs.length > 0
+                    ? `<span>⏱ 首次打卡：${detail.logs[detail.logs.length - 1].date}</span>
+                       <span>🕐 最近打卡：${detail.logs[0].date}</span>`
+                    : '<span>⚪ 尚無打卡記錄</span>'}
+            </div>
+
+            <!-- 打卡紀錄 -->
+            ${detail.logs.length > 0 ? `
+            <div class="th-log-section">
+                <div class="th-log-header">打卡紀錄（共 ${detail.logs.length} 筆）</div>
+                <div class="th-log-scroll">
+                    <table class="th-log-table">
+                        <thead><tr><th>日期</th><th>類型</th><th>時間</th></tr></thead>
+                        <tbody>${detail.logs.map(l => `
+                            <tr>
+                                <td>${l.date}</td>
+                                <td><span class="th-log-type ${typeClass[l.type] ?? ''}">${typeMap[l.type] ?? l.type}</span></td>
+                                <td>${l.checkinAt.slice(11)}</td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>` : ''}
+        </div>`;
 }
 
 // ══════════════════════════════════════════════════════════════
