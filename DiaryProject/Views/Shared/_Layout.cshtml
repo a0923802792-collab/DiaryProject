@@ -11,17 +11,9 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 
-
 <body>
     <header class="topbar">
-        <a asp-controller="Home" asp-action="Index" class="topbar-logo">Moody</a>
-
-        <div class="topbar-search-wrap">
-            <div class="search-box">
-                <span class="search-icon">⌕</span>
-                <input class="search-input" type="text" placeholder="Search my journal" />
-            </div>
-        </div>
+        <a asp-controller="FrontPage" asp-action="Index" class="topbar-logo">Moody</a>
 
         <div class="topbar-actions">
             <button class="top-icon-btn" type="button" aria-label="通知" onclick="openNotification()">
@@ -39,16 +31,18 @@
                     <circle cx="12" cy="7" r="4" />
                 </svg>
             </button>
-
         </div>
     </header>
 
     <div class="layout-container">
         <aside class="sidenav-wrapper" aria-label="主選單">
             <nav class="sidenav-box">
-
                 <nav class="side-nav">
-                    <a class="nav-icon-btn" href="/Home2/Index" aria-label="首頁" data-tooltip="首頁">
+                    <a class="nav-icon-btn"
+                           asp-controller="FrontPage"
+                           asp-action="Index"
+                           aria-label="首頁"
+                           data-tooltip="首頁">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                             <polyline points="9 22 9 12 15 12 15 22" />
@@ -92,8 +86,6 @@
                         </svg>
                     </a>
                 </nav>
-
-
             </nav>
 
             <button type="button" class="giftwall-btn">★</button>

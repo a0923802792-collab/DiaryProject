@@ -25,7 +25,8 @@ public sealed class ChartController(IConfiguration configuration) : ControllerBa
     {
         var range = BuildRange(preset, from, to);
 
-        var timeSeriesTask = ChartRepository.GetTimeSeriesCountAsync(_connectionString, range, ct);
+        const int userId = 1; // 先暫用，之後再改成登入使用者
+        var timeSeriesTask = ChartRepository.GetTimeSeriesCountAsync(_connectionString, userId, range, ct);
         var typeTask = ChartRepository.GetTypeDistributionAsync(_connectionString, range, ct);
         var categoryTask = ChartRepository.GetCategoryDistributionAsync(_connectionString, range, ct);
         var moodTrendTask = ChartRepository.GetMoodTrendAsync(_connectionString, range, ct);

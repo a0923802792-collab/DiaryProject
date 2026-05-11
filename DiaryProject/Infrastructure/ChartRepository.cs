@@ -111,40 +111,44 @@ public static class ChartRepository
 {
     // ── 日記時間序列（自動依粒度切換 日/週/月）──────────────────────
     public static async Task<List<(string Label, int Count)>> GetTimeSeriesCountAsync(
-        string connectionString, ChartDateRange? range = null, CancellationToken ct = default)
+        string connectionString, int userId, ChartDateRange? range = null, CancellationToken ct = default)
     {
         range ??= new ChartDateRange();
         var (selectExpr, groupExpr, orderExpr) = range.Granularity switch
         {
             "day" => ("FORMAT(DiaryDate, 'MM/dd')",
-                       "FORMAT(DiaryDate, 'MM/dd')",
-                       "MIN(CAST(DiaryDate AS DATE))"),
+                      "FORMAT(DiaryDate, 'MM/dd')",
+                      "MIN(CAST(DiaryDate AS DATE))"),
             "week" => ("FORMAT(DATEADD(DAY, 1 - DATEPART(WEEKDAY, DiaryDate), DiaryDate), 'MM/dd')",
                        "FORMAT(DATEADD(DAY, 1 - DATEPART(WEEKDAY, DiaryDate), DiaryDate), 'MM/dd')",
                        "MIN(DATEADD(DAY, 1 - DATEPART(WEEKDAY, DiaryDate), DiaryDate))"),
             _ => ("FORMAT(DiaryDate, 'yyyy-MM')",
-                       "FORMAT(DiaryDate, 'yyyy-MM')",
-                       "FORMAT(DiaryDate, 'yyyy-MM')")
+                  "FORMAT(DiaryDate, 'yyyy-MM')",
+                  "FORMAT(DiaryDate, 'yyyy-MM')")
         };
 
         var sql = $"""
-            SELECT {selectExpr} AS Label, COUNT(*) AS Cnt
-            FROM dbo.Diary
-            WHERE (TemplateType = 'normal' OR TemplateType = 'mood')
-              AND Visibility = 'shared' AND Status = 'published'
-            {range.ToSqlCondition("")}
-            GROUP BY {groupExpr}
-            ORDER BY {orderExpr};
-            """;
+        SELECT {selectExpr} AS Label, COUNT(*) AS Cnt
+        FROM dbo.Diary
+        WHERE UserId = @UserId
+          AND (TemplateType = 'normal' OR TemplateType = 'mood')
+          AND Status = 'published'
+        {range.ToSqlCondition("")}
+        GROUP BY {groupExpr}
+        ORDER BY {orderExpr};
+        """;
 
         var result = new List<(string, int)>();
         await using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync(ct);
         await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@UserId", userId);
         range.AddParams(cmd);
+
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
             result.Add((reader.GetString(0), reader.GetInt32(1)));
+
         return result;
     }
 
