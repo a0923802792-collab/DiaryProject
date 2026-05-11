@@ -26,13 +26,15 @@ builder.Services.AddCors(options =>
 });
 
 // EF Core DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddDbContext<DiarySystemDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.CommandTimeout(120)));
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.CommandTimeout(120)));
 
 var app = builder.Build();
 
@@ -56,7 +58,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Review}/{action=Time}/{id?}")
+    pattern: "{controller=Diary}/{action=DiaryList}/{id?}")
     .WithStaticAssets();
 
 app.MapControllers();

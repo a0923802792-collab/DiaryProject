@@ -26,6 +26,7 @@ namespace DiaryProject.Services.Review
 
             var diaries = await _context.Diaries
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Where(d =>
                     d.UserId == userId &&
                     d.Status != "deleted" &&

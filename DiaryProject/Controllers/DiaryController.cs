@@ -25,7 +25,7 @@ namespace DiaryProject.Controllers
         {
             using var readTransaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted);
 
-            // 效能優化區塊：列表頁只需要摘要資料，避免把全文與多個關聯集合塞進同一個 SQL 查詢。
+            //效能優化區塊：列表頁只需要摘要資料，避免把全文與多個關聯集合塞進同一個 SQL 查詢。
             // 整合備註：若之後列表新增欄位，優先放在這個主查詢；大量關聯資料請維持下方分批查詢。
             var rows = _context.Diaries
                 .AsNoTracking()
@@ -47,6 +47,27 @@ namespace DiaryProject.Controllers
                     DrawingCount = d.DiaryMedia.Count(m => m.MediaType == "drawing")
                 })
                 .ToList();
+            //        var rows = _context.Diaries
+            //.AsNoTracking()
+            //.Where(d => d.UserId == DemoUserId && d.Status == "published")
+            //.OrderByDescending(d => d.DiaryDate)
+            //.ThenByDescending(d => d.DiaryTime)
+            //.Select(d => new
+            //{
+            //    d.DiaryId,
+            //    d.DiaryDate,
+            //    d.TemplateType,
+            //    d.Visibility,
+            //    d.PreviewText,
+            //    NormalTitle = d.DiaryNormal != null ? d.DiaryNormal.Title : string.Empty,
+            //    MoodEvent = d.DiaryMood != null ? d.DiaryMood.EventNote : string.Empty,
+            //    MoodThought = d.DiaryMood != null ? d.DiaryMood.ThoughtNote : string.Empty,
+            //    MoodNeed = d.DiaryMood != null ? d.DiaryMood.NeedNote : string.Empty,
+            //    ImageCount = 0,
+            //    DrawingCount = 0
+            //})
+            //.Take(100)
+            //.ToList();
 
             var diaryIds = rows.Select(d => d.DiaryId).ToList();
             if (diaryIds.Count == 0)
