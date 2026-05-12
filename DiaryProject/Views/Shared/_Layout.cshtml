@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <header class="topbar">
+    <header class="topbar" style="position: relative; z-index: 20000;">
         <a asp-controller="FrontPage" asp-action="Index" class="topbar-logo">Moody</a>
 
         <div class="topbar-actions">
@@ -25,7 +25,8 @@
             @* <button type="button" class="action-btn" aria-label="通知">🔔</button> *@
             @* <button type="button" class="action-btn" aria-label="個人資料">👤</button> *@
 
-            <button class="top-icon-btn" type="button" aria-label="使用者">
+            @* 先暫定為登出 *@
+            <button class="top-icon-btn" type="button" aria-label="登出" onclick="logoutAndGoWelcome()">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
@@ -35,7 +36,7 @@
     </header>
 
     <div class="layout-container">
-        <aside class="sidenav-wrapper" aria-label="主選單">
+        <aside class="sidenav-wrapper" aria-label="主選單" style="position: relative; z-index: 20000;">
             <nav class="sidenav-box">
                 <nav class="side-nav">
                     <a class="nav-icon-btn"
@@ -101,3 +102,28 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<script>
+    async function logoutAndGoWelcome() {
+        try {
+            const response = await fetch('/api/user/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                alert('登出失敗');
+                return;
+            }
+
+            localStorage.removeItem('userData');
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('currentUserName');
+
+            window.location.href = '/';
+        } catch (error) {
+            console.error('登出失敗:', error);
+            alert('無法連線到伺服器');
+        }
+    }
+</script>

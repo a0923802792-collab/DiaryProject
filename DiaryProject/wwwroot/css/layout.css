@@ -396,3 +396,50 @@ a {
     padding: 0;
     overflow: auto;
 }
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20000;
+}
+
+.sidenav-wrapper {
+    position: relative;
+    z-index: 10000;
+}
+
+.topbar-actions {
+    position: relative;
+    z-index: 10001;
+}
+
+.top-icon-btn {
+    position: relative;
+    z-index: 10002;
+    pointer-events: auto;
+}
+.page-shell {
+    position: relative;
+    z-index: 1;
+}
+
+.frontpage-react-host {
+    position: relative;
+    z-index: 1;
+}
+
+    .frontpage-react-host * {
+        pointer-events: none;
+    }
+
+    .frontpage-react-host a,
+    .frontpage-react-host button,
+    .frontpage-react-host input,
+    .frontpage-react-host textarea,
+    .frontpage-react-host select,
+    .frontpage-react-host [role="button"],
+    .frontpage-react-host .interactive,
+    .frontpage-react-host .planet-button,
+    .frontpage-react-host .mood-clickable {
+        pointer-events: auto;
+    }

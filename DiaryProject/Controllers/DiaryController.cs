@@ -844,4 +844,3 @@ namespace DiaryProject.Controllers
         }
     }
 }
-}

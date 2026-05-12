@@ -82,7 +82,13 @@ namespace DiaryProject.Controllers
                 }
             });
         }
-
+        /* ===== Block 2: 登出 ===== */
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return Ok(new { message = "已登出" });
+        }
         /* ===== Block 3: 更新個人資料 ===== */
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)

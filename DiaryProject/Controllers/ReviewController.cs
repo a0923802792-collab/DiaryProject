@@ -13,6 +13,16 @@ namespace DiaryProject.Controllers
             _reviewService = reviewService;
         }
 
+        private int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
+        }
+
+        private IActionResult RedirectToLogin()
+        {
+            return RedirectToAction("Welcome", "Entry");
+        }
+
         public IActionResult Index()
         {
             return RedirectToAction(nameof(Time));
@@ -24,6 +34,12 @@ namespace DiaryProject.Controllers
             DateTime? selectedDate,
             long? selectedDiaryId)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             var today = DateTime.Today;
 
             var targetYear = year ?? today.Year;
@@ -49,14 +65,12 @@ namespace DiaryProject.Controllers
                 targetMonth = 12;
             }
 
-            var userId = 1;
-
             ReviewTimePageViewModel vm;
 
             try
             {
                 vm = await _reviewService.GetTimeReviewAsync(
-                    userId,
+                    userId.Value,
                     targetYear,
                     targetMonth,
                     selectedDate,
@@ -72,13 +86,17 @@ namespace DiaryProject.Controllers
 
         public async Task<IActionResult> Photos()
         {
-            var userId = 1;
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
 
             ReviewPhotoPageViewModel vm;
 
             try
             {
-                vm = await _reviewService.GetPhotoReviewAsync(userId);
+                vm = await _reviewService.GetPhotoReviewAsync(userId.Value);
             }
             catch
             {
@@ -95,9 +113,13 @@ namespace DiaryProject.Controllers
         [HttpGet]
         public async Task<IActionResult> DaySummary(long id)
         {
-            var userId = 1;
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
 
-            var vm = await _reviewService.GetDayDetailAsync(userId, id);
+            var vm = await _reviewService.GetDayDetailAsync(userId.Value, id);
 
             if (vm == null)
             {
@@ -117,9 +139,13 @@ namespace DiaryProject.Controllers
         [HttpGet]
         public async Task<IActionResult> DaySummaryByDate(DateTime date)
         {
-            var userId = 1;
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
 
-            var vm = await _reviewService.GetDaySummaryPanelAsync(userId, date);
+            var vm = await _reviewService.GetDaySummaryPanelAsync(userId.Value, date);
 
             return PartialView("Partials/_DaySummary", vm);
         }
@@ -127,9 +153,13 @@ namespace DiaryProject.Controllers
         [HttpGet]
         public async Task<IActionResult> DayDetail(long id)
         {
-            var userId = 1;
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
 
-            var vm = await _reviewService.GetDayDetailAsync(userId, id);
+            var vm = await _reviewService.GetDayDetailAsync(userId.Value, id);
 
             if (vm == null)
             {
@@ -147,9 +177,13 @@ namespace DiaryProject.Controllers
                 return BadRequest();
             }
 
-            var userId = 1;
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
 
-            var vm = await _reviewService.GetPhotoDetailAsync(userId, id);
+            var vm = await _reviewService.GetPhotoDetailAsync(userId.Value, id);
 
             if (vm == null)
             {
@@ -162,9 +196,13 @@ namespace DiaryProject.Controllers
         [HttpGet]
         public async Task<IActionResult> FeaturedSlides(string? startMediaId)
         {
-            var userId = 1;
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
 
-            var vm = await _reviewService.GetFeaturedPhotosAsync(userId);
+            var vm = await _reviewService.GetFeaturedPhotosAsync(userId.Value);
 
             if (!string.IsNullOrWhiteSpace(startMediaId))
             {
