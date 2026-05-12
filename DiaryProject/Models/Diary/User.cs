@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace DiaryProject.Models;
-
+// 分支測試 2026.05.12
 public partial class User
 {
     public int UserId { get; set; }
