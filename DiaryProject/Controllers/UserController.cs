@@ -17,7 +17,32 @@ namespace DiaryProject.Controllers
         {
             _db = db;
         }
+        [HttpGet("me")]
+        public IActionResult Me()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
 
+            var user = _db.Users.FirstOrDefault(u => u.UserId == userId.Value && !u.IsDeleted);
+            if (user == null)
+            {
+                return NotFound(new { message = "找不到使用者" });
+            }
+
+            return Ok(new
+            {
+                id = user.UserId,
+                email = user.Email,
+                nickname = user.Nickname,
+                birthday = user.birthday,
+                phone = user.Phone,
+                theme = user.Theme,
+                isNotificationEnabled = user.IsNotificationEnabled
+            });
+        }
         /* ===== Block 1: 註冊 ===== */
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)

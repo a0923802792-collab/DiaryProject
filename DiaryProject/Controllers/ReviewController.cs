@@ -219,5 +219,26 @@ namespace DiaryProject.Controllers
 
             return PartialView("Partials/_FeaturedSlides", vm);
         }
+
+        [HttpGet]
+        public IActionResult GoToDiary(long id)
+        {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
+            if (id <= 0)
+            {
+                return RedirectToAction(nameof(Time));
+            }
+
+            return RedirectToAction(
+                actionName: "DiaryDetail",
+                controllerName: "Diary",
+                routeValues: new { id = (int)id }
+            );
+        }
     }
 }

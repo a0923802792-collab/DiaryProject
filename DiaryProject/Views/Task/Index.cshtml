@@ -1,7 +1,7 @@
 ﻿@model List<DiaryProject.ViewModels.TaskListItemViewModel>
 
 @{
-	ViewData["Title"] = "行動中心";
+	ViewData["Title"] = "任務中心";
 
 	var dailyTasks = Model?.Where(x => x.RhythmType == "Daily").ToList()
 					 ?? new List<DiaryProject.ViewModels.TaskListItemViewModel>();
@@ -18,21 +18,21 @@
 
 <header class="page-header">
 	<div>
-		<h2>Action Center</h2>
+		<h2>任務中心</h2>
 		<p>把今天最適合開始的一步放在前面，讓任務成為照顧自己的節奏，而不是壓力清單。</p>
 	</div>
 </header>
 
 <section class="content-shell">
 	    <div class="rhythm-panel-shell">
-			<section class="list-panel" aria-label="小行動清單">
+			<section class="list-panel" aria-label="小任務清單">
 				<div class="rhythm-head">
 					<div>
 						<p class="eyebrow">My Rhythm</p>
 						<h3>My Rhythm</h3>
 					</div>
 
-					<button class="btn add-task-inline" id="openCreateBtn" type="button">＋ 加入一個小行動</button>
+					<button class="btn add-task-inline" id="openCreateBtn" type="button">＋ 加入一個任務</button>
 				</div>
 
 				<div class="tabs-row">
@@ -45,7 +45,7 @@
 					<section class="empty-guide">
 						<div class="empty-guide-card">
 							<p class="empty-guide-eyebrow">Start Small</p>
-							<h4>先加入第一個小行動</h4>
+							<h4>先加入第一個任務</h4>
 							<p>先從一個很小、今天就能開始的節奏開始。建立後，任務卡會出現在這裡。</p>
 							<button type="button" class="btn add-task-inline empty-guide-btn" id="openCreateBtnFallback">
 								＋ 建立第一個任務
@@ -146,7 +146,7 @@
 		<header class="modal-head">
 			<div>
 				<p class="eyebrow">Small Step</p>
-				<h3 id="taskModalTitle">加入一個小行動</h3>
+				<h3 id="taskModalTitle">加入一個任務</h3>
 			</div>
 			<button class="icon-btn" id="closeTaskModal" type="button" aria-label="關閉">×</button>
 		</header>
@@ -155,7 +155,7 @@
 			@Html.AntiForgeryToken()
 
 			<label>
-				<span>小行動名稱</span>
+				<span>任務名稱</span>
 				<input name="Title" type="text" placeholder="例如：睡前放鬆 15 分鐘" required>
 			</label>
 

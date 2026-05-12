@@ -25,13 +25,13 @@
             @* <button type="button" class="action-btn" aria-label="通知">🔔</button> *@
             @* <button type="button" class="action-btn" aria-label="個人資料">👤</button> *@
 
-            @* 先暫定為登出 *@
-            <button class="top-icon-btn" type="button" aria-label="登出" onclick="logoutAndGoWelcome()">
+            @* 登出 *@
+            <a asp-controller="FrontPage" asp-action="Profile" class="top-icon-btn" aria-label="個人資料">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                 </svg>
-            </button>
+            </a>
         </div>
     </header>
 
@@ -66,7 +66,7 @@
                         </svg>
                     </a>
 
-                    <a class="nav-icon-btn" href="/Task/Index" aria-label="習慣頁" data-tooltip="任務中心">
+                    <a class="nav-icon-btn" href="/Task/Index" aria-label="任務頁" data-tooltip="任務中心">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5Z" />
                             <path class="icon-fill" d="M5 3L5.5 5L7 5.5L5.5 6L5 8L4.5 6L3 5.5L4.5 5Z" />
