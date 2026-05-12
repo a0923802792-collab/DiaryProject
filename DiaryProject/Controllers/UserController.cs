@@ -60,13 +60,30 @@ namespace DiaryProject.Controllers
         {
             var user = _db.Users.FirstOrDefault(u => u.Email == request.Email);
 
-            if (user == null || user.IsDeleted || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            if (user == null || user.IsDeleted)
             {
                 return Unauthorized("信箱或密碼錯誤！");
             }
+
+            bool passwordOk;
+            try
+            {
+                passwordOk = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+            }
+            catch
+            {
+                return Unauthorized("信箱或密碼錯誤！");
+            }
+
+            if (!passwordOk)
+            {
+                return Unauthorized("信箱或密碼錯誤！");
+            }
+
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("UserName", user.Nickname ?? "");
             HttpContext.Session.SetString("UserEmail", user.Email ?? "");
+
             return Ok(new
             {
                 message = "登入成功！",
