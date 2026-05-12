@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Text.Json;
-
+// 備註
 namespace DiaryProject.Controllers
 {
     public class DiaryController : Controller
