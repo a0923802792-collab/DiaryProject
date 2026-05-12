@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Text.Json;
-using DiaryProject.Models;
-using DiaryProject.ViewModels.Diary;
 
 namespace DiaryProject.Controllers
 {
@@ -13,7 +11,6 @@ namespace DiaryProject.Controllers
     {
         private readonly DiarySystemDbContext _context;
         private readonly IWebHostEnvironment _env;
-        private const int DemoUserId = 1;
 
         public DiaryController(DiarySystemDbContext context, IWebHostEnvironment env)
         {
@@ -21,15 +18,29 @@ namespace DiaryProject.Controllers
             _env = env;
         }
 
+        private int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
+        }
+
+        private IActionResult RedirectToLogin()
+        {
+            return RedirectToAction("Welcome", "Entry");
+        }
+
         public IActionResult DiaryList()
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             using var readTransaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted);
 
-            //效能優化區塊：列表頁只需要摘要資料，避免把全文與多個關聯集合塞進同一個 SQL 查詢。
-            // 整合備註：若之後列表新增欄位，優先放在這個主查詢；大量關聯資料請維持下方分批查詢。
             var rows = _context.Diaries
                 .AsNoTracking()
-                .Where(d => d.UserId == DemoUserId && d.Status == "published")
+                .Where(d => d.UserId == userId.Value && d.Status == "published")
                 .OrderByDescending(d => d.DiaryDate)
                 .ThenByDescending(d => d.DiaryTime)
                 .Select(d => new
@@ -47,27 +58,6 @@ namespace DiaryProject.Controllers
                     DrawingCount = d.DiaryMedia.Count(m => m.MediaType == "drawing")
                 })
                 .ToList();
-            //        var rows = _context.Diaries
-            //.AsNoTracking()
-            //.Where(d => d.UserId == DemoUserId && d.Status == "published")
-            //.OrderByDescending(d => d.DiaryDate)
-            //.ThenByDescending(d => d.DiaryTime)
-            //.Select(d => new
-            //{
-            //    d.DiaryId,
-            //    d.DiaryDate,
-            //    d.TemplateType,
-            //    d.Visibility,
-            //    d.PreviewText,
-            //    NormalTitle = d.DiaryNormal != null ? d.DiaryNormal.Title : string.Empty,
-            //    MoodEvent = d.DiaryMood != null ? d.DiaryMood.EventNote : string.Empty,
-            //    MoodThought = d.DiaryMood != null ? d.DiaryMood.ThoughtNote : string.Empty,
-            //    MoodNeed = d.DiaryMood != null ? d.DiaryMood.NeedNote : string.Empty,
-            //    ImageCount = 0,
-            //    DrawingCount = 0
-            //})
-            //.Take(100)
-            //.ToList();
 
             var diaryIds = rows.Select(d => d.DiaryId).ToList();
             if (diaryIds.Count == 0)
@@ -75,8 +65,6 @@ namespace DiaryProject.Controllers
                 return View(new Diary_ListAll());
             }
 
-            // 效能優化區塊：標籤、心情、反應分批查詢，再用 DiaryId 回填到 ViewModel。
-            // 這樣可以降低 EF 產生複雜 JOIN/子查詢造成逾時的機率。
             var tagRows = _context.Diaries
                 .AsNoTracking()
                 .Where(d => diaryIds.Contains(d.DiaryId))
@@ -168,9 +156,17 @@ namespace DiaryProject.Controllers
 
             return View(model);
         }
+
         public IActionResult DiaryDetail(int id)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             using var readTransaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted);
+
             if (id <= 0)
             {
                 return RedirectToAction(nameof(DiaryList));
@@ -184,7 +180,7 @@ namespace DiaryProject.Controllers
                 .Include(d => d.DiaryMedia)
                 .Include(d => d.Moods)
                 .Include(d => d.Tags)
-                .FirstOrDefault(d => d.DiaryId == id && d.UserId == DemoUserId && d.Status == "published");
+                .FirstOrDefault(d => d.DiaryId == id && d.UserId == userId.Value && d.Status == "published");
 
             if (row == null)
             {
@@ -220,7 +216,7 @@ namespace DiaryProject.Controllers
 
             ViewBag.PrevId = _context.Diaries
                 .AsNoTracking()
-                .Where(d => d.UserId == DemoUserId && d.Status == "published"
+                .Where(d => d.UserId == userId.Value && d.Status == "published"
                     && (d.DiaryDate > row.DiaryDate || (d.DiaryDate == row.DiaryDate && d.DiaryTime > row.DiaryTime)))
                 .OrderBy(d => d.DiaryDate)
                 .ThenBy(d => d.DiaryTime)
@@ -229,7 +225,7 @@ namespace DiaryProject.Controllers
 
             ViewBag.NextId = _context.Diaries
                 .AsNoTracking()
-                .Where(d => d.UserId == DemoUserId && d.Status == "published"
+                .Where(d => d.UserId == userId.Value && d.Status == "published"
                     && (d.DiaryDate < row.DiaryDate || (d.DiaryDate == row.DiaryDate && d.DiaryTime < row.DiaryTime)))
                 .OrderByDescending(d => d.DiaryDate)
                 .ThenByDescending(d => d.DiaryTime)
@@ -241,7 +237,14 @@ namespace DiaryProject.Controllers
 
         public IActionResult DiaryEdit(int id)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             using var readTransaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted);
+
             var row = id > 0
                 ? _context.Diaries
                     .AsNoTracking()
@@ -251,7 +254,7 @@ namespace DiaryProject.Controllers
                     .Include(d => d.DiaryMedia)
                     .Include(d => d.Moods)
                     .Include(d => d.Tags)
-                    .FirstOrDefault(d => d.DiaryId == id && d.UserId == DemoUserId && d.Status != "deleted")
+                    .FirstOrDefault(d => d.DiaryId == id && d.UserId == userId.Value && d.Status != "deleted")
                 : null;
 
             var model = new Diary_Edit();
@@ -292,7 +295,7 @@ namespace DiaryProject.Controllers
 
             var activeTags = _context.Tags
                 .AsNoTracking()
-                .Where(t => t.IsActive && (t.UserId == null || t.UserId == DemoUserId))
+                .Where(t => t.IsActive && (t.UserId == null || t.UserId == userId.Value))
                 .OrderBy(t => t.TagName)
                 .Select(t => new { t.UserId, t.TagName })
                 .ToList();
@@ -302,7 +305,7 @@ namespace DiaryProject.Controllers
                 .Select(t => t.TagName));
 
             model.UserCustomTagName.AddRange(activeTags
-                .Where(t => t.UserId == DemoUserId)
+                .Where(t => t.UserId == userId.Value)
                 .Select(t => t.TagName));
 
             foreach (var selectedTag in model.TagName)
@@ -341,6 +344,12 @@ namespace DiaryProject.Controllers
             string selectedMoodIdsCsv,
             string mediaItemsJson)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             var templateType = model.TemplateType == "mood" ? "mood" : "normal";
             var diaryStatus = string.Equals(status, "draft", StringComparison.OrdinalIgnoreCase) ? "draft" : "published";
             var diaryVisibility = string.Equals(visibility, "shared", StringComparison.OrdinalIgnoreCase) ? "shared" : "private";
@@ -358,13 +367,13 @@ namespace DiaryProject.Controllers
                     .Include(d => d.DiaryMedia)
                     .Include(d => d.Tags)
                     .Include(d => d.Moods)
-                    .FirstOrDefault(d => d.DiaryId == model.DiaryId && d.UserId == DemoUserId && d.Status != "deleted")
+                    .FirstOrDefault(d => d.DiaryId == model.DiaryId && d.UserId == userId.Value && d.Status != "deleted")
                 : null;
 
             var isNew = row == null;
             if (isNew)
             {
-                row = new Diary { UserId = DemoUserId, CreatedAt = now };
+                row = new Diary { UserId = userId.Value, CreatedAt = now };
                 _context.Diaries.Add(row);
             }
 
@@ -421,16 +430,17 @@ namespace DiaryProject.Controllers
                 .Where(t => !string.IsNullOrWhiteSpace(t))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
+
             var preservedDeletedTags = deletedCustomTagNames.Count == 0
                 ? new List<Tag>()
                 : row.Tags
-                    .Where(t => t.UserId == DemoUserId && deletedCustomTagNames.Contains(t.TagName, StringComparer.OrdinalIgnoreCase))
+                    .Where(t => t.UserId == userId.Value && deletedCustomTagNames.Contains(t.TagName, StringComparer.OrdinalIgnoreCase))
                     .ToList();
 
             if (deletedCustomTagNames.Count > 0)
             {
                 var deletedTags = _context.Tags
-                    .Where(t => t.UserId == DemoUserId && t.IsActive)
+                    .Where(t => t.UserId == userId.Value && t.IsActive)
                     .AsEnumerable()
                     .Where(t => deletedCustomTagNames.Contains(t.TagName, StringComparer.OrdinalIgnoreCase))
                     .ToList();
@@ -450,10 +460,11 @@ namespace DiaryProject.Controllers
             {
                 row.Tags.Add(preservedTag);
             }
+
             if (tagNames.Count > 0)
             {
                 var tagPool = _context.Tags
-                    .Where(t => t.IsActive && (t.UserId == null || t.UserId == DemoUserId))
+                    .Where(t => t.IsActive && (t.UserId == null || t.UserId == userId.Value))
                     .ToList();
 
                 foreach (var tagName in tagNames)
@@ -464,7 +475,7 @@ namespace DiaryProject.Controllers
                         tag = new Tag
                         {
                             TagId = CreateTagId(),
-                            UserId = DemoUserId,
+                            UserId = userId.Value,
                             TagName = tagName,
                             TagType = "custom",
                             CreatedAt = now,
@@ -497,17 +508,35 @@ namespace DiaryProject.Controllers
             var normalizedMedia = BuildPersistedMediaItems(mediaItemsJson, row.DiaryDate);
             AppendMediaDebugLog($"normalizedMedia count={normalizedMedia.Count}");
 
-            // DiaryMedia.DiaryId 是必要外鍵，不能只 Clear() 解除關聯；
-            // 需明確刪除舊媒體列，再加入本次表單送出的媒體。
             var oldMedia = row.DiaryMedia.ToList();
             if (oldMedia.Count > 0)
             {
                 _context.DiaryMedia.RemoveRange(oldMedia);
             }
-            foreach (var media in normalizedMedia) row.DiaryMedia.Add(media);
+
+            foreach (var media in normalizedMedia)
+            {
+                row.DiaryMedia.Add(media);
+            }
 
             _context.SaveChanges();
             AppendMediaDebugLog($"SaveChanges done. diaryId={row.DiaryId}, mediaCount={normalizedMedia.Count}");
+
+            if (isNew)
+            {
+                var reactionTypes = new[] { "like", "love", "hug", "empathy", "cheer" };
+                foreach (var reactionType in reactionTypes)
+                {
+                    _context.PostReactionCounts.Add(new PostReactionCount
+                    {
+                        DiaryId = row.DiaryId,
+                        ReactionType = reactionType,
+                        Count = 0,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+                _context.SaveChanges();
+            }
 
             if (diaryStatus == "draft")
             {
@@ -521,10 +550,17 @@ namespace DiaryProject.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult ToggleShare(int id)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             if (id <= 0) return RedirectToAction(nameof(DiaryList));
 
             var row = _context.Diaries
-                .FirstOrDefault(d => d.DiaryId == id && d.UserId == DemoUserId && d.Status != "deleted");
+                .FirstOrDefault(d => d.DiaryId == id && d.UserId == userId.Value && d.Status != "deleted");
+
             if (row == null) return NotFound();
 
             row.Visibility = row.Visibility == "shared" ? "private" : "shared";
@@ -538,10 +574,17 @@ namespace DiaryProject.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteDiary(int id)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             if (id <= 0) return RedirectToAction(nameof(DiaryList));
 
             var row = _context.Diaries
-                .FirstOrDefault(d => d.DiaryId == id && d.UserId == DemoUserId && d.Status != "deleted");
+                .FirstOrDefault(d => d.DiaryId == id && d.UserId == userId.Value && d.Status != "deleted");
+
             if (row == null) return NotFound();
 
             row.Status = "deleted";
@@ -556,6 +599,12 @@ namespace DiaryProject.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteDiaries(List<int> ids)
         {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue)
+            {
+                return RedirectToLogin();
+            }
+
             var validIds = (ids ?? new List<int>())
                 .Where(id => id > 0)
                 .Distinct()
@@ -568,7 +617,7 @@ namespace DiaryProject.Controllers
 
             var now = DateTime.Now;
             var rows = _context.Diaries
-                .Where(d => d.UserId == DemoUserId && d.Status != "deleted" && validIds.Contains((int)d.DiaryId))
+                .Where(d => d.UserId == userId.Value && d.Status != "deleted" && validIds.Contains((int)d.DiaryId))
                 .ToList();
 
             foreach (var row in rows)
@@ -730,7 +779,6 @@ namespace DiaryProject.Controllers
             }
             catch
             {
-                // Ignore logging failure to avoid impacting save flow.
             }
         }
 
@@ -796,10 +844,4 @@ namespace DiaryProject.Controllers
         }
     }
 }
-
-
-
-
-
-
-
+}

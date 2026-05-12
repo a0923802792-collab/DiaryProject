@@ -16,12 +16,17 @@ namespace DiaryProject.Controllers
         //首頁
         public IActionResult Index(int? selectedTaskId = null)
         {
-            int userId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
+
             List<TaskListItemViewModel> tasks;
 
             try
             {
-                tasks = _itaskService.GetTaskList(userId);
+                tasks = _itaskService.GetTaskList(userId.Value);
             }
             catch
             {
@@ -50,8 +55,12 @@ namespace DiaryProject.Controllers
                 return View(vm);
             }
 
-            int userId = 1;
-            int newTaskId = _itaskService.CreateTask(vm, userId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
+            int newTaskId = _itaskService.CreateTask(vm, userId.Value);
 
             TempData["ToastMessage"] = "新增任務成功";
             return RedirectToAction("Index", new { selectedTaskId = newTaskId });
@@ -82,15 +91,24 @@ namespace DiaryProject.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Archive(int taskId)
         {
-            int userid = 1;//未連接會員資料表 先以1號會員為例
-            _itaskService.ArchiveTask(taskId, userid);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
+            _itaskService.ArchiveTask(taskId, userId.Value);
             return RedirectToAction("Index");
         }
 
         public IActionResult Detail (int id)
         {
-            int userid = 1;//未連接會員資料表 先以1號會員為例
-            var taskDetail = _itaskService.GetTaskDetail(id, userid);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
+
+            var taskDetail = _itaskService.GetTaskDetail(id, userId.Value);
             if (taskDetail == null)
             {
                 return NotFound();
@@ -99,9 +117,13 @@ namespace DiaryProject.Controllers
         }
         public IActionResult DetailPanel(int id)
         {
-            int userId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
 
-            var vm = _itaskService.GetTaskDetail(id, userId);
+            var vm = _itaskService.GetTaskDetail(id, userId.Value);
 
             if (vm == null)
             {
@@ -116,9 +138,13 @@ namespace DiaryProject.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            int userId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
 
-            var vm = _itaskService.GetTaskEditData(id, userId);
+            var vm = _itaskService.GetTaskEditData(id, userId.Value);
 
             if (vm == null)
             {
@@ -137,8 +163,12 @@ namespace DiaryProject.Controllers
                 return View(vm);
             }
 
-            int userId = 1;
-            int taskId = _itaskService.UpdateTask(vm, userId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
+            int taskId = _itaskService.UpdateTask(vm, userId.Value);
 
             TempData["ToastMessage"] = "編輯任務成功";
             return RedirectToAction("Index", new { selectedTaskId = taskId });
@@ -146,9 +176,13 @@ namespace DiaryProject.Controllers
 
         public IActionResult EditPanel(int id)
         {
-            int userId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Welcome", "Entry");
+            }
 
-            var vm = _itaskService.GetTaskEditData(id, userId);
+            var vm = _itaskService.GetTaskEditData(id, userId.Value);
 
             if (vm == null)
             {

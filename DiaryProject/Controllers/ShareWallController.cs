@@ -12,12 +12,10 @@ namespace DiaryProject.Controllers;
 [Route("api/sharewall4")]
 public sealed class ShareWallController(IConfiguration configuration) : ControllerBase
 {
-    // 連線字串在建構子時建立一次，不重複建立
     private readonly string _connectionString = ShareWallData.BuildConnectionString(configuration);
 
     /// <summary>
     /// 取得分享牆貼文清單。
-    /// 支援分類、標籤、關鍵字篩選與排序，全部由後端 SQL 執行。
     /// GET /api/sharewall4?category=感情&tag=旅遊&q=關鍵字&sort=hot
     /// </summary>
     [HttpGet]
@@ -30,19 +28,33 @@ public sealed class ShareWallController(IConfiguration configuration) : Controll
     }
 
     /// <summary>
-    /// 新增貼文反應（按讚等）。
-    /// 使用 MERGE 語法確保冪等性：同一 (DiaryId, ReactionType) 重複呼叫只會累加計數。
-    /// POST /api/sharewall4/react  Body: { "diaryId": 9, "reactionType": "like" }
+    /// 新增貼文反應。
+    /// Session 有登入者時優先使用 Session 的 UserId；
+    /// 若尚未登入，才退回前端傳入的 VisitorId。
+    /// POST /api/sharewall4/react
     /// </summary>
     [HttpPost("react")]
     public async Task<IActionResult> React(
-        [FromBody] ReactRequest req,
-        CancellationToken cancellationToken)
+     [FromBody] ReactRequest req,
+     CancellationToken cancellationToken)
     {
-        var (success, error) = await ShareWallData.AddReactionAsync(
-            _connectionString, req.DiaryId, req.ReactionType, req.VisitorId, cancellationToken);
+        var sessionUserId = HttpContext.Session.GetInt32("UserId");
+        var visitorId = sessionUserId.HasValue
+            ? $"user-{sessionUserId.Value}"
+            : req.VisitorId;
 
-        if (!success) return BadRequest(new { error });
+        var (success, error) = await ShareWallData.AddReactionAsync(
+            _connectionString,
+            req.DiaryId,
+            req.ReactionType,
+            visitorId,
+            cancellationToken);
+
+        if (!success)
+        {
+            return BadRequest(new { error });
+        }
+
         return Ok(new { ok = true });
     }
 }

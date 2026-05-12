@@ -235,7 +235,9 @@ a {
     }
 
 .giftwall-btn {
-    margin-top: auto;
+    position: fixed;
+    left: 1.5rem;
+    bottom: 1.5rem;
     width: 4rem;
     height: 4rem;
     background-color: var(--mo-brown);
@@ -249,6 +251,8 @@ a {
     cursor: pointer;
     box-shadow: var(--soft-shadow);
     font-size: 1.25rem;
+    text-decoration: none;
+    z-index: 99999;
 }
 
     .giftwall-btn:hover {
@@ -256,6 +260,8 @@ a {
         transform: scale(1.1) translateY(-0.25rem);
         color: var(--mo-brown);
     }
+
+
 
 .page-shell {
     flex: 1 1 auto;

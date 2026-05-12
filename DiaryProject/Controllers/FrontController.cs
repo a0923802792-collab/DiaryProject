@@ -15,13 +15,25 @@ namespace DiaryProject.Controllers
             _db = db;
         }
 
+        private int? ResolveUserId(int? userId)
+        {
+            var sessionUserId = HttpContext.Session.GetInt32("UserId");
+            return sessionUserId ?? userId;
+        }
+
         // API 1：查某個月份所有有日記的日期
         // GET /api/front/month?userId=1&year=2026&month=5
         [HttpGet("month")]
-        public async Task<IActionResult> GetMonthDiaries(int userId, int year, int month)
+        public async Task<IActionResult> GetMonthDiaries(int? userId, int year, int month)
         {
+            var finalUserId = ResolveUserId(userId);
+            if (!finalUserId.HasValue || finalUserId.Value <= 0)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
+
             var diaries = await _db.Diaries
-                .Where(d => d.UserId == userId
+                .Where(d => d.UserId == finalUserId.Value
                          && d.DiaryDate.Year == year
                          && d.DiaryDate.Month == month
                          && d.Status != "deleted")
@@ -40,20 +52,30 @@ namespace DiaryProject.Controllers
         // API 2：查某一天的日記完整內容
         // GET /api/front/by-date?userId=1&date=2026-05-01
         [HttpGet("by-date")]
-        public async Task<IActionResult> GetDiaryByDate(int userId, string date)
+        public async Task<IActionResult> GetDiaryByDate(int? userId, string date)
         {
+            var finalUserId = ResolveUserId(userId);
+            if (!finalUserId.HasValue || finalUserId.Value <= 0)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
+
             if (!DateOnly.TryParse(date, out var parsedDate))
+            {
                 return BadRequest("日期格式錯誤，請用 yyyy-MM-dd");
+            }
 
             var diary = await _db.Diaries
                 .Include(d => d.DiaryNormal)
                 .Include(d => d.DiaryMood)
-                .FirstOrDefaultAsync(d => d.UserId == userId
+                .FirstOrDefaultAsync(d => d.UserId == finalUserId.Value
                                        && d.DiaryDate == parsedDate
                                        && d.Status != "deleted");
 
             if (diary == null)
+            {
                 return NotFound("這天沒有日記");
+            }
 
             return Ok(new
             {
@@ -62,11 +84,9 @@ namespace DiaryProject.Controllers
                 templateType = diary.TemplateType,
                 previewText = diary.PreviewText,
 
-                // 一般日記
                 title = diary.DiaryNormal?.Title,
                 body = diary.DiaryNormal?.Body,
 
-                // 心情日記
                 energyValue = diary.DiaryMood?.EnergyValue,
                 stressValue = diary.DiaryMood?.StressValue,
                 sleepValue = diary.DiaryMood?.SleepValue,
@@ -75,15 +95,21 @@ namespace DiaryProject.Controllers
 
         // GET /api/front/today-summary?userId=1
         [HttpGet("today-summary")]
-        public async Task<IActionResult> GetTodaySummary(int userId)
+        public async Task<IActionResult> GetTodaySummary(int? userId)
         {
+            var finalUserId = ResolveUserId(userId);
+            if (!finalUserId.HasValue || finalUserId.Value <= 0)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
+
             var today = DateOnly.FromDateTime(DateTime.Today);
 
             var diary = await _db.Diaries
                 .Include(d => d.DiaryMood)
                 .Include(d => d.Tags)
                 .FirstOrDefaultAsync(d =>
-                    d.UserId == userId &&
+                    d.UserId == finalUserId.Value &&
                     d.DiaryDate == today &&
                     d.Status != "deleted");
 
@@ -115,19 +141,27 @@ namespace DiaryProject.Controllers
 
         // GET /api/front/today-moods?userId=1
         [HttpGet("today-moods")]
-        public async Task<IActionResult> GetTodayMoods(int userId)
+        public async Task<IActionResult> GetTodayMoods(int? userId)
         {
+            var finalUserId = ResolveUserId(userId);
+            if (!finalUserId.HasValue || finalUserId.Value <= 0)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
+
             var today = DateOnly.FromDateTime(DateTime.Today);
 
             var diary = await _db.Diaries
                 .Include(d => d.Moods)
                 .FirstOrDefaultAsync(d =>
-                    d.UserId == userId &&
+                    d.UserId == finalUserId.Value &&
                     d.DiaryDate == today &&
                     d.Status != "deleted");
 
             if (diary == null)
+            {
                 return Ok(new { moods = new List<object>() });
+            }
 
             var moods = diary.Moods.Select(m => new
             {

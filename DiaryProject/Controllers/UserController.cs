@@ -64,7 +64,9 @@ namespace DiaryProject.Controllers
             {
                 return Unauthorized("信箱或密碼錯誤！");
             }
-
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetString("UserName", user.Nickname ?? "");
+            HttpContext.Session.SetString("UserEmail", user.Email ?? "");
             return Ok(new
             {
                 message = "登入成功！",
