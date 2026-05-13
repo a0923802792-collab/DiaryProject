@@ -310,8 +310,8 @@ namespace DiaryProject.Services.Review
                     .Select(t => t.TagName)
                     .ToList(),
                 IsFeatured =
-                    media.Diary.DiaryMood != null &&
-                    (media.Diary.DiaryMood.StressValue ?? 10) <= 4
+                    media.Diary.DiaryMood == null ||
+                    media.Diary.DiaryMood.StressValue <= 4
             };
         }
     }
