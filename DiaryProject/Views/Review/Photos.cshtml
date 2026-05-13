@@ -23,44 +23,6 @@
     <section class="review-section">
         <div class="review-section-title">
             <div>
-                <h2>照片牆</h2>
-                <p>先看畫面，點選照片後再查看那一天的細節。</p>
-            </div>
-        </div>
-
-        @if (!Model.Photos.Any())
-        {
-            <div class="review-empty">
-                目前沒有照片資料。
-            </div>
-        }
-        else
-        {
-            <div class="review-photo-wall">
-                @for (var i = 0; i < Model.Photos.Count; i++)
-                {
-                    var photo = Model.Photos[i];
-                    var isBig = i % 6 == 0;
-
-                    <button type="button"
-                            class="review-photo-card @(isBig ? "big" : "")"
-                            data-open-photo-detail="@photo.MediaId"
-                            aria-label="查看 @photo.FullDateText 的照片詳情">
-                        <img src="@photo.FileUrl" alt="日記照片" />
-
-                        @if (photo.IsFeatured)
-                        {
-                            <span class="review-photo-badge">精選</span>
-                        }
-                    </button>
-                }
-            </div>
-        }
-    </section>
-
-    <section class="review-section">
-        <div class="review-section-title">
-            <div>
                 <h2>精選片段</h2>
                 <p>少量值得再看一次的照片，點選後以幻燈片方式呈現。</p>
             </div>
@@ -83,6 +45,54 @@
                             aria-label="開啟 @photo.FullDateText 的精選回顧">
                         <img src="@photo.FileUrl" alt="精選照片" />
                     </button>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="review-section">
+        <div class="review-section-title">
+            <div>
+                <h2>照片牆</h2>
+                <p>依照日記日期排列。點選照片後查看該日照片詳情。</p>
+            </div>
+        </div>
+
+        @if (!Model.MonthGroups.Any())
+        {
+            <div class="review-empty">
+                目前沒有照片資料。
+            </div>
+        }
+        else
+        {
+            <div class="review-photo-timeline">
+                @foreach (var monthGroup in Model.MonthGroups)
+                {
+                    <section class="review-photo-month">
+                        <h2>@monthGroup.MonthTitle</h2>
+
+                        <div class="review-photo-day-list">
+                            @foreach (var dayGroup in monthGroup.DayGroups)
+                            {
+                                <article class="review-photo-day-group">
+                                    <h3>@dayGroup.DateTitle</h3>
+
+                                    <div class="review-photo-strip">
+                                        @foreach (var photo in dayGroup.Photos)
+                                        {
+                                            <button type="button"
+                                                    class="review-photo-thumb"
+                                                    data-open-photo-detail="@photo.MediaId"
+                                                    aria-label="查看 @photo.FullDateText 的照片詳情">
+                                                <img src="@photo.FileUrl" alt="日記照片" />
+                                            </button>
+                                        }
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </section>
                 }
             </div>
         }

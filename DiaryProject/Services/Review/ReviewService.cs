@@ -158,11 +158,38 @@ namespace DiaryProject.Services.Review
         public async Task<ReviewPhotoPageViewModel> GetPhotoReviewAsync(int userId)
         {
             var photos = await GetPhotoQuery(userId)
-                .OrderByDescending(m => m.Diary.DiaryDate)
-                .ThenByDescending(m => m.CreatedAt)
-                .ToListAsync();
+        .OrderByDescending(m => m.Diary.DiaryDate)
+        .ThenByDescending(m => m.Diary.DiaryTime)
+        .ThenBy(m => m.CreatedAt)
+        .ToListAsync();
 
-            var photoItems = photos.Select(ToPhotoItemViewModel).ToList();
+            var photoItems = photos
+                .Select(ToPhotoItemViewModel)
+                .ToList();
+
+            var monthGroups = photoItems
+                .GroupBy(p => new
+                {
+                    p.DiaryDate.Year,
+                    p.DiaryDate.Month
+                })
+                .OrderByDescending(g => g.Key.Year)
+                .ThenByDescending(g => g.Key.Month)
+                .Select(monthGroup => new ReviewPhotoMonthGroupViewModel
+                {
+                    Year = monthGroup.Key.Year,
+                    Month = monthGroup.Key.Month,
+                    DayGroups = monthGroup
+                        .GroupBy(p => p.DiaryDate.Date)
+                        .OrderByDescending(g => g.Key)
+                        .Select(dayGroup => new ReviewPhotoDayGroupViewModel
+                        {
+                            DiaryDate = dayGroup.Key,
+                            Photos = dayGroup.ToList()
+                        })
+                        .ToList()
+                })
+                .ToList();
 
             return new ReviewPhotoPageViewModel
             {
@@ -170,7 +197,43 @@ namespace DiaryProject.Services.Review
                 FeaturedPhotos = photoItems
                     .Where(p => p.IsFeatured)
                     .Take(3)
-                    .ToList()
+                    .ToList(),
+                MonthGroups = monthGroups
+            };
+        }
+
+        public async Task<ReviewPhotoDetailViewModel?> GetPhotoDetailSlidesAsync(int userId, string mediaId)
+        {
+            var targetMedia = await GetPhotoQuery(userId)
+                .FirstOrDefaultAsync(m => m.MediaId == mediaId);
+
+            if (targetMedia == null)
+            {
+                return null;
+            }
+
+            var diaryPhotos = await GetPhotoQuery(userId)
+                .Where(m => m.DiaryId == targetMedia.DiaryId)
+                .OrderBy(m => m.CreatedAt)
+                .ToListAsync();
+
+            var photoItems = diaryPhotos
+                .Select(ToPhotoItemViewModel)
+                .ToList();
+
+            var targetPhoto = ToPhotoItemViewModel(targetMedia);
+
+            return new ReviewPhotoDetailViewModel
+            {
+                DiaryId = targetPhoto.DiaryId,
+                DiaryDate = targetPhoto.DiaryDate,
+                PreviewText = targetPhoto.PreviewText,
+                MainMoodName = targetPhoto.MainMoodName,
+                MainMoodEmoji = targetPhoto.MainMoodEmoji,
+                Tags = targetPhoto.Tags,
+                IsFeatured = targetPhoto.IsFeatured,
+                StartMediaId = mediaId,
+                Photos = photoItems
             };
         }
 

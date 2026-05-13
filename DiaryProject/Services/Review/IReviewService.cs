@@ -21,6 +21,8 @@ namespace DiaryProject.Services.Review
 
         Task<ReviewPhotoItemViewModel?> GetPhotoDetailAsync(int userId, string mediaId);
 
+        Task<ReviewPhotoDetailViewModel?> GetPhotoDetailSlidesAsync(int userId, string mediaId);
+
         Task<List<ReviewPhotoItemViewModel>> GetFeaturedPhotosAsync(int userId);
     }
 }

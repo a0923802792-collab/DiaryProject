@@ -183,7 +183,7 @@ namespace DiaryProject.Controllers
                 return RedirectToLogin();
             }
 
-            var vm = await _reviewService.GetPhotoDetailAsync(userId.Value, id);
+            var vm = await _reviewService.GetPhotoDetailSlidesAsync(userId.Value, id);
 
             if (vm == null)
             {

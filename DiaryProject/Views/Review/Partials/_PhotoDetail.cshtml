@@ -1,4 +1,4 @@
-﻿@model DiaryProject.ViewModels.Review.ReviewPhotoItemViewModel
+﻿@model DiaryProject.ViewModels.Review.ReviewPhotoDetailViewModel
 
 @{
     var diaryDateText = Model.DiaryDate.ToString("M月d日");
@@ -14,9 +14,43 @@
 </div>
 
 <div class="review-modal-body">
-    <img src="@Model.FileUrl"
-         alt="日記照片"
-         class="review-modal-image" />
+    <div class="review-photo-detail-slider" data-photo-detail-root>
+        @for (var i = 0; i < Model.Photos.Count; i++)
+        {
+            var photo = Model.Photos[i];
+            var isActive = photo.MediaId == Model.StartMediaId || (string.IsNullOrEmpty(Model.StartMediaId) && i == 0);
+
+            <article class="review-photo-detail-slide @(isActive ? "is-active" : "")"
+                     data-photo-detail-slide>
+                <img src="@photo.FileUrl"
+                     alt="日記照片"
+                     class="review-modal-image" />
+            </article>
+        }
+
+        @if (Model.Photos.Count > 1)
+        {
+            <button type="button"
+                    class="photo-detail-arrow photo-detail-arrow-prev"
+                    data-photo-detail-prev
+                    aria-label="上一張照片">
+                ‹
+            </button>
+
+            <button type="button"
+                    class="photo-detail-arrow photo-detail-arrow-next"
+                    data-photo-detail-next
+                    aria-label="下一張照片">
+                ›
+            </button>
+
+            <div class="photo-detail-counter">
+                <span data-photo-detail-current>1</span>
+                /
+                <span>@Model.Photos.Count</span>
+            </div>
+        }
+    </div>
 
     <p>@Model.PreviewText</p>
 
@@ -40,20 +74,20 @@
 
 <div class="modal-actions">
     <a class="btn btn-primary"
-           asp-controller="Review"
-           asp-action="Time"
-           asp-route-year="@Model.DiaryDate.Year"
-           asp-route-month="@Model.DiaryDate.Month"
-           asp-route-selectedDiaryId="@Model.DiaryId">
+       asp-controller="Review"
+       asp-action="Time"
+       asp-route-year="@Model.DiaryDate.Year"
+       asp-route-month="@Model.DiaryDate.Month"
+       asp-route-selectedDiaryId="@Model.DiaryId">
         回到這天
     </a>
 
     <a class="btn btn-ghost"
-           asp-controller="Review"
-           asp-action="GoToDiary"
-           asp-route-id="@Model.DiaryId"
-           data-confirm-diary-link
-           data-confirm-diary-date="@diaryDateText">
+       asp-controller="Review"
+       asp-action="GoToDiary"
+       asp-route-id="@Model.DiaryId"
+       data-confirm-diary-link
+       data-confirm-diary-date="@diaryDateText">
         前往日記詳情
     </a>
 
