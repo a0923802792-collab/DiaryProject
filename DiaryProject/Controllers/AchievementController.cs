@@ -20,8 +20,12 @@ public sealed class AchievementController(IConfiguration configuration) : Contro
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken ct)
     {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+            return Unauthorized(new { message = "尚未登入" });
+
         var result = await AchievementData.GetAchievementsAsync(
-            _diaryConnStr, _taskConnStr, AchievementData.DefaultUserId, ct);
+            _diaryConnStr, _taskConnStr, userId.Value, ct);
 
         return Ok(result);
     }

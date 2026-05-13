@@ -9,10 +9,6 @@ namespace DiaryProject.Models;
 // =====================================================================
 public static class AchievementData
 {
-    // 目前無登入系統，暫時使用 EmotionTaskDB 的 demo user
-    // 未來有登入後，改由 Controller 傳入真實 userId
-    public const int DefaultUserId = 1;
-
     /// <summary>
     /// 取得全部 25 個成就的解鎖狀態。
     /// 若任一 DB 連線失敗（例如 EmotionTaskDB 尚未建立），
@@ -21,14 +17,14 @@ public static class AchievementData
     public static async Task<AchievementResponse> GetAchievementsAsync(
         string diaryConnStr,
         string taskConnStr,
-        int userId = DefaultUserId,
+        int userId,
         CancellationToken ct = default)
     {
         // 兩個 DB 獨立查詢，任一失敗都用空統計繼續
         DiaryStats diary;
         TaskStats tasks;
 
-        try { diary = await AchievementRepository.QueryDiaryStatsAsync(diaryConnStr, ct); }
+        try { diary = await AchievementRepository.QueryDiaryStatsAsync(diaryConnStr, userId, ct); }
         catch { diary = new DiaryStats(); }
 
         try { tasks = await AchievementRepository.QueryTaskStatsAsync(taskConnStr, userId, ct); }
@@ -61,8 +57,8 @@ public static class AchievementData
             A(7,  "🎉", "初獲共鳴",       "日記收到第 1 個反應",          d.TotalReactionsReceived >= 1, d.TotalReactionsReceived,    1),
             A(8,  "🌟", "人氣貼文",       "單篇日記反應總數 ≥ 10",        d.MaxReactionsOnSinglePost >= 10, d.MaxReactionsOnSinglePost, 10),
             A(9,  "🔥", "熱門創作者",     "單篇日記反應總數 ≥ 50",        d.MaxReactionsOnSinglePost >= 50, d.MaxReactionsOnSinglePost, 50),
-            A(10, "💛", "給予溫暖",       "對別人按過 5 次反應",
-                        false, 0, 5),   // 需登入系統才能識別「我給了誰按讚」
+            A(10, "💛", "給予溫暖",       "對別人送出 5 次反應",
+                        d.ReactionsGiven >= 5, d.ReactionsGiven, 5),
 
             // ── 習慣建立類（11-13）─────────────────────────────────
             A(11, "🌱", "習慣萌芽",       "建立第 1 個習慣",             t.TaskCount >= 1,              t.TaskCount,                 1),
