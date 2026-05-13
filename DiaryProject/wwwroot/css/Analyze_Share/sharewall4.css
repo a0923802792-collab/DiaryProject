@@ -193,13 +193,7 @@
    圖片預覽
    --------------------------------------------------------------------- */
 
-/* 卡片縮圖（列表用） */
-.img-preview img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 1rem;
-}
+/* 卡片縮圖（列表用）— 尺寸定義在 style2.css */
 
 /* 圖片張數徽章：顯示在縮圖右下角 */
 .img-count-badge {

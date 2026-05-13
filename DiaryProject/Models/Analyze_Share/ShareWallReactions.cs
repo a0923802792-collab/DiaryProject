@@ -15,8 +15,8 @@ public sealed class ShareWallReactions
     /// <summary>👍 按讚數</summary>
     public int Like { get; init; }
 
-    /// <summary>😌 平靜數</summary>
-    public int Peace { get; init; }
+    /// <summary>❤️ 愛心數</summary>
+    public int Love { get; init; }
 
     /// <summary>🤗 擁抱數</summary>
     public int Hug { get; init; }

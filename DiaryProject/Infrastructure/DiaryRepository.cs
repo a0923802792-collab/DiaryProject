@@ -263,7 +263,7 @@ public static class DiaryRepository
         var sql = $"""
             SELECT DiaryId, FileUrl
             FROM dbo.DiaryMedia
-            WHERE MediaType = 'Image'
+            WHERE MediaType IN ('Image', 'drawing')
               AND DiaryId IN ({string.Join(", ", diaryIds)})
             ORDER BY DiaryId, CreatedAt;
             """;
@@ -309,20 +309,17 @@ public static class DiaryRepository
     }
 
     /// <summary>
-    /// 新增或累加一筆反應到 PostReactionCount。
+    /// 新增或切換一筆反應，並同步維護 PostReactionCount 計數。
     ///
-    /// 若傳入 visitorId：
-    ///   先嘗試在 PostReactionLog 插入 (DiaryId, ReactionType, VisitorId)，
-    ///   若 UNIQUE 約束衝突（已按過）就直接返回 false，不累加計數。
-    ///   成功插入後再 MERGE PostReactionCount 累加 +1。
+    /// 一人一篇只能有一種反應（PostReactionLog UNIQUE on (DiaryId, VisitorId)）：
+    ///   - 首次反應   → INSERT log + MERGE +1 計數，回傳 1
+    ///   - 相同反應   → 略過，回傳 0
+    ///   - 切換反應   → UPDATE log + 舊計數 -1 + 新計數 +1，回傳 2
     ///
-    /// 若 visitorId 為 null：
-    ///   直接 MERGE 累加（向下相容舊行為）。
-    ///
-    /// ★ 未來擴充：visitorId 改為真實 userId 後，此方法完全不需要改。
+    /// 若 visitorId 為 null：直接 MERGE +1（匿名，不做防重複），回傳 1
     /// </summary>
-    /// <returns>true = 本次有效寫入；false = 重複，已略過</returns>
-    public static async Task<bool> UpsertReactionAsync(
+    /// <returns>0 = 重複略過；1 = 首次寫入；2 = 切換反應</returns>
+    public static async Task<int> UpsertReactionAsync(
         string connectionString,
         long diaryId,
         string reactionType,
@@ -332,50 +329,113 @@ public static class DiaryRepository
         await using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync(cancellationToken);
 
-        // ── 有 visitorId：先做 DB 層防重複 ──────────────────────
-        if (visitorId is not null)
+        // ── 無 visitorId：直接累加，不做防重複 ──────────────────
+        if (visitorId is null)
         {
-            const string logSql = """
-                IF NOT EXISTS (
-                    SELECT 1 FROM dbo.PostReactionLog
-                    WHERE DiaryId = @DiaryId AND ReactionType = @ReactionType AND VisitorId = @VisitorId
-                )
-                BEGIN
-                    INSERT INTO dbo.PostReactionLog (DiaryId, ReactionType, VisitorId, CreatedAt)
-                    VALUES (@DiaryId, @ReactionType, @VisitorId, SYSUTCDATETIME());
-                    SELECT 1;   -- 代表「本次是新增」
-                END
-                ELSE
-                    SELECT 0;   -- 代表「已存在，略過」
+            const string noIdSql = """
+                MERGE dbo.PostReactionCount AS target
+                USING (SELECT @DiaryId AS DiaryId, @ReactionType AS ReactionType) AS source
+                    ON target.DiaryId = source.DiaryId AND target.ReactionType = source.ReactionType
+                WHEN MATCHED THEN
+                    UPDATE SET Count = target.Count + 1, UpdatedAt = SYSUTCDATETIME()
+                WHEN NOT MATCHED THEN
+                    INSERT (DiaryId, ReactionType, Count, UpdatedAt)
+                    VALUES (@DiaryId, @ReactionType, 1, SYSUTCDATETIME());
                 """;
-
-            await using var logCmd = new SqlCommand(logSql, conn);
-            logCmd.Parameters.AddWithValue("@DiaryId", diaryId);
-            logCmd.Parameters.AddWithValue("@ReactionType", reactionType);
-            logCmd.Parameters.AddWithValue("@VisitorId", visitorId);
-
-            var result = await logCmd.ExecuteScalarAsync(cancellationToken);
-            if (Convert.ToInt32(result) == 0) return false; // 重複，不累加
+            await using var noIdCmd = new SqlCommand(noIdSql, conn);
+            noIdCmd.Parameters.AddWithValue("@DiaryId", diaryId);
+            noIdCmd.Parameters.AddWithValue("@ReactionType", reactionType);
+            await noIdCmd.ExecuteNonQueryAsync(cancellationToken);
+            return 1;
         }
         // ────────────────────────────────────────────────────────
 
+        // ── 有 visitorId：原子操作，一次處理三種情況 ────────────
         const string sql = """
+            DECLARE @OldType NVARCHAR(20);
+
+            SELECT @OldType = ReactionType
+            FROM dbo.PostReactionLog
+            WHERE DiaryId = @DiaryId AND VisitorId = @VisitorId;
+
+            -- 相同反應：略過
+            IF @OldType = @ReactionType
+            BEGIN
+                SELECT 0; RETURN;
+            END
+
+            -- 首次反應：INSERT log + MERGE +1
+            IF @OldType IS NULL
+            BEGIN
+                INSERT INTO dbo.PostReactionLog (DiaryId, VisitorId, ReactionType, CreatedAt, UpdatedAt)
+                VALUES (@DiaryId, @VisitorId, @ReactionType, SYSUTCDATETIME(), SYSUTCDATETIME());
+
+                MERGE dbo.PostReactionCount AS target
+                USING (SELECT @DiaryId AS DiaryId, @ReactionType AS ReactionType) AS source
+                    ON target.DiaryId = source.DiaryId AND target.ReactionType = source.ReactionType
+                WHEN MATCHED THEN
+                    UPDATE SET Count = target.Count + 1, UpdatedAt = SYSUTCDATETIME()
+                WHEN NOT MATCHED THEN
+                    INSERT (DiaryId, ReactionType, Count, UpdatedAt)
+                    VALUES (@DiaryId, @ReactionType, 1, SYSUTCDATETIME());
+
+                SELECT 1; RETURN;
+            END
+
+            -- 切換反應：UPDATE log + 舊計數 -1（最小為 0）+ 新計數 +1
+            UPDATE dbo.PostReactionLog
+            SET ReactionType = @ReactionType, UpdatedAt = SYSUTCDATETIME()
+            WHERE DiaryId = @DiaryId AND VisitorId = @VisitorId;
+
+            UPDATE dbo.PostReactionCount
+            SET Count     = CASE WHEN Count > 0 THEN Count - 1 ELSE 0 END,
+                UpdatedAt = SYSUTCDATETIME()
+            WHERE DiaryId = @DiaryId AND ReactionType = @OldType;
+
             MERGE dbo.PostReactionCount AS target
             USING (SELECT @DiaryId AS DiaryId, @ReactionType AS ReactionType) AS source
-                ON target.DiaryId      = source.DiaryId
-               AND target.ReactionType = source.ReactionType
+                ON target.DiaryId = source.DiaryId AND target.ReactionType = source.ReactionType
             WHEN MATCHED THEN
-                UPDATE SET Count     = target.Count + 1,
-                           UpdatedAt = SYSUTCDATETIME()
+                UPDATE SET Count = target.Count + 1, UpdatedAt = SYSUTCDATETIME()
             WHEN NOT MATCHED THEN
                 INSERT (DiaryId, ReactionType, Count, UpdatedAt)
                 VALUES (@DiaryId, @ReactionType, 1, SYSUTCDATETIME());
+
+            SELECT 2;
             """;
 
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@DiaryId", diaryId);
         cmd.Parameters.AddWithValue("@ReactionType", reactionType);
-        await cmd.ExecuteNonQueryAsync(cancellationToken);
-        return true;
+        cmd.Parameters.AddWithValue("@VisitorId", visitorId);
+        var result = await cmd.ExecuteScalarAsync(cancellationToken);
+        return Convert.ToInt32(result);
+    }
+
+    /// <summary>
+    /// 批次查詢指定使用者對各貼文的反應類型。
+    /// 回傳 Dictionary&lt;DiaryId, ReactionType&gt;，未按過的貼文不會出現在字典中。
+    /// </summary>
+    public static async Task<Dictionary<long, string>> GetMyReactionsAsync(
+        SqlConnection connection,
+        IReadOnlyCollection<long> diaryIds,
+        string visitorId,
+        CancellationToken cancellationToken = default)
+    {
+        var sql = $"""
+            SELECT DiaryId, ReactionType
+            FROM dbo.PostReactionLog
+            WHERE VisitorId = @VisitorId
+              AND DiaryId IN ({string.Join(", ", diaryIds)});
+            """;
+
+        var result = new Dictionary<long, string>();
+        await using var cmd = new SqlCommand(sql, connection);
+        cmd.Parameters.AddWithValue("@VisitorId", visitorId);
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+            result[reader.GetInt64(reader.GetOrdinal("DiaryId"))] =
+                reader.GetString(reader.GetOrdinal("ReactionType"));
+        return result;
     }
 }

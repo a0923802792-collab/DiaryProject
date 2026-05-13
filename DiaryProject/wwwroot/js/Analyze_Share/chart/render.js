@@ -86,7 +86,6 @@ export function renderAll(data) {
         drawTaskWeekday(data.taskWeekdayDist);
         drawTaskRhythm(data.taskRhythmDist);
         drawTaskHour(data.taskHourDist);
-        drawTaskWeeklyGoal(data.taskWeeklyGoal);
     } catch (e) { console.error('[task renderAll]', e); }
     if (wasHidden) {
         taskPanel.style.display = 'none';

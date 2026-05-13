@@ -23,4 +23,7 @@ public sealed class ShareWallQuery
 
     /// <summary>每頁筆數，預設 10 筆</summary>
     public int PageSize { get; init; } = 10;
+
+    /// <summary>訪客識別 ID（來自 identity.js），用於回傳「我的反應」，null 表示不查詢</summary>
+    public string? VisitorId { get; init; }
 }
