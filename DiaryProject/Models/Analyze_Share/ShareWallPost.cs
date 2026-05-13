@@ -31,4 +31,7 @@ public sealed class ShareWallPost
 
     /// <summary>各類型反應計數</summary>
     public ShareWallReactions Reactions { get; init; } = new();
+
+    /// <summary>當前請求者對此篇文章已按的反應類型，null 表示未按過</summary>
+    public string? MyReaction { get; init; }
 }

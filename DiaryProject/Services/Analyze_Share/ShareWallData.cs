@@ -21,7 +21,7 @@ public static class ShareWallData
     /// <summary>
     /// 分享牆允許的反應類型白名單（業務規則，不屬於 Repository）
     /// </summary>
-    private static readonly string[] AllowedReactionTypes = ["like", "peace", "hug", "empathy", "cheer"];
+    private static readonly string[] AllowedReactionTypes = ["like", "love", "hug", "empathy", "cheer"];
 
     // -----------------------------------------------------------------
     // 公開方法
@@ -76,6 +76,11 @@ public static class ShareWallData
         ApplyImages(builders, await DiaryRepository.GetImagesAsync(conn, diaryIds, cancellationToken));
         ApplyReactions(builders, await DiaryRepository.GetReactionsAsync(conn, diaryIds, cancellationToken));
 
+        // 若前端傳入身份 ID，批次查詢「我的反應」並填入每篇貼文
+        if (!string.IsNullOrWhiteSpace(query.VisitorId))
+            ApplyMyReactions(builders,
+                await DiaryRepository.GetMyReactionsAsync(conn, diaryIds, query.VisitorId, cancellationToken));
+
         // 業務排序：hot 依總反應數；latest 依日期時間
         var ordered = query.Sort == "hot"
             ? builders.Values.OrderByDescending(p => p.TotalReactions).ThenByDescending(p => p.SortDate).ThenByDescending(p => p.SortTime)
@@ -112,10 +117,10 @@ public static class ShareWallData
         if (!AllowedReactionTypes.Contains(reactionType.ToLowerInvariant()))
             return (false, $"不允許的反應類型：{reactionType}");
 
-        var inserted = await DiaryRepository.UpsertReactionAsync(
+        // 0 = 重複略過（前端仍視為成功）；1 = 首次寫入；2 = 切換反應
+        await DiaryRepository.UpsertReactionAsync(
             connectionString, diaryId, reactionType.ToLowerInvariant(), visitorId, cancellationToken);
 
-        // inserted = false 表示 DB 層判斷為重複，前端应視為成功（不需要顯示錯誤）
         return (true, string.Empty);
     }
 
@@ -185,12 +190,27 @@ public static class ShareWallData
             switch (row.ReactionType.Trim().ToLowerInvariant())
             {
                 case "like": b.Reactions.Like += row.Count; break;
+                case "love":
                 case "peace":
-                case "relief": b.Reactions.Peace += row.Count; break;
+                case "relief": b.Reactions.Love += row.Count; break;
                 case "hug": b.Reactions.Hug += row.Count; break;
                 case "empathy": b.Reactions.Empathy += row.Count; break;
                 case "cheer": b.Reactions.Cheer += row.Count; break;
             }
+        }
+    }
+
+    /// <summary>
+    /// 將「我的反應」查詢結果填入對應的 PostBuilder。
+    /// </summary>
+    private static void ApplyMyReactions(
+        IReadOnlyDictionary<long, PostBuilder> builders,
+        IReadOnlyDictionary<long, string> myReactions)
+    {
+        foreach (var (diaryId, reactionType) in myReactions)
+        {
+            if (builders.TryGetValue(diaryId, out var b))
+                b.MyReaction = reactionType;
         }
     }
 
@@ -220,9 +240,10 @@ public static class ShareWallData
         public string Content { get; init; } = string.Empty;
         public List<string> Images { get; } = [];
         public MutableReactions Reactions { get; } = new();
+        public string? MyReaction { get; set; }
 
         public int TotalReactions =>
-            Reactions.Like + Reactions.Peace + Reactions.Hug + Reactions.Empathy + Reactions.Cheer;
+            Reactions.Like + Reactions.Love + Reactions.Hug + Reactions.Empathy + Reactions.Cheer;
 
         public ShareWallPost ToResponse()
         {
@@ -247,11 +268,12 @@ public static class ShareWallData
                 Reactions = new ShareWallReactions
                 {
                     Like = Reactions.Like,
-                    Peace = Reactions.Peace,
+                    Love = Reactions.Love,
                     Hug = Reactions.Hug,
                     Empathy = Reactions.Empathy,
                     Cheer = Reactions.Cheer,
                 },
+                MyReaction = MyReaction,
             };
         }
     }
@@ -259,7 +281,7 @@ public static class ShareWallData
     private sealed class MutableReactions
     {
         public int Like { get; set; }
-        public int Peace { get; set; }
+        public int Love { get; set; }
         public int Hug { get; set; }
         public int Empathy { get; set; }
         public int Cheer { get; set; }

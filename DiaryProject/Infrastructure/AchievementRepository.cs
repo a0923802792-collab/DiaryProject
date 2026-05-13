@@ -13,6 +13,7 @@ public sealed class DiaryStats
     public int SharedDiaryCount { get; init; }  // 公開分享篇數
     public int MaxReactionsOnSinglePost { get; init; }  // 單篇最高反應數
     public int TotalReactionsReceived { get; init; }  // 全部反應總數
+    public int ReactionsGiven { get; init; }  // 此使用者送出的反應次數
 }
 
 // =====================================================================
@@ -45,6 +46,7 @@ public static class AchievementRepository
     /// </summary>
     public static async Task<DiaryStats> QueryDiaryStatsAsync(
         string connectionString,
+        int userId,
         CancellationToken ct = default)
     {
         // 一次送多個 SELECT，用 NextResult() 逐一讀取，減少 round-trip
@@ -52,13 +54,13 @@ public static class AchievementRepository
             -- 1. 總日記數
             SELECT COUNT(*)
             FROM dbo.Diary
-            WHERE TemplateType = 'normal' AND Status = 'published';
+            WHERE TemplateType = 'normal' AND Status = 'published' AND UserId = @UserId;
 
             -- 2. 最長連續記錄天數（gaps-and-islands）
             WITH DiaryDates AS (
                 SELECT DISTINCT CAST(DiaryDate AS DATE) AS day
                 FROM dbo.Diary
-                WHERE TemplateType = 'normal' AND Status = 'published'
+                WHERE TemplateType = 'normal' AND Status = 'published' AND UserId = @UserId
             ),
             Numbered AS (
                 SELECT day,
@@ -71,23 +73,34 @@ public static class AchievementRepository
             -- 3. 公開分享篇數
             SELECT COUNT(*)
             FROM dbo.Diary
-            WHERE Visibility = 'shared' AND Status = 'published';
+            WHERE Visibility = 'shared' AND Status = 'published' AND UserId = @UserId;
 
-            -- 4. 單篇最高反應數
+            -- 4. 單篇最高反應數（只計算此使用者的日記）
             SELECT ISNULL(MAX(total), 0)
             FROM (
-                SELECT DiaryId, SUM([Count]) AS total
-                FROM dbo.PostReactionCount
-                GROUP BY DiaryId
+                SELECT rc.DiaryId, SUM(rc.[Count]) AS total
+                FROM dbo.PostReactionCount rc
+                INNER JOIN dbo.Diary d ON d.DiaryId = rc.DiaryId
+                WHERE d.UserId = @UserId
+                GROUP BY rc.DiaryId
             ) x;
 
-            -- 5. 全部反應總數
-            SELECT ISNULL(SUM([Count]), 0) FROM dbo.PostReactionCount;
+            -- 5. 全部反應總數（此使用者的日記收到的）
+            SELECT ISNULL(SUM(rc.[Count]), 0)
+            FROM dbo.PostReactionCount rc
+            INNER JOIN dbo.Diary d ON d.DiaryId = rc.DiaryId
+            WHERE d.UserId = @UserId;
+
+            -- 6. 此使用者送出的反應次數（給予溫暖用）
+            SELECT COUNT(*)
+            FROM dbo.PostReactionLog
+            WHERE VisitorId = 'user-' + CAST(@UserId AS NVARCHAR(20));
             """;
 
         await using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync(ct);
         await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@UserId", userId);
         await using var r = await cmd.ExecuteReaderAsync(ct);
 
         await r.ReadAsync(ct); int diaryCount = r.GetInt32(0);
@@ -95,6 +108,7 @@ public static class AchievementRepository
         await r.NextResultAsync(ct); await r.ReadAsync(ct); int sharedCount = r.GetInt32(0);
         await r.NextResultAsync(ct); await r.ReadAsync(ct); int maxReactions = r.GetInt32(0);
         await r.NextResultAsync(ct); await r.ReadAsync(ct); int totalReact = r.GetInt32(0);
+        await r.NextResultAsync(ct); await r.ReadAsync(ct); int reactionsGiven = r.GetInt32(0);
 
         return new DiaryStats
         {
@@ -103,6 +117,7 @@ public static class AchievementRepository
             SharedDiaryCount = sharedCount,
             MaxReactionsOnSinglePost = maxReactions,
             TotalReactionsReceived = totalReact,
+            ReactionsGiven = reactionsGiven,
         };
     }
 
@@ -199,6 +214,7 @@ public static class AchievementRepository
                         THEN 1 ELSE 0 END;
 
             -- 9. 是否某週所有 Active 習慣都有打卡（精準執行）
+            -- 只計算已結束的週（排除當週），避免週未結束就誤解鎖
             WITH WeekTaskCounts AS (
                 SELECT DATEPART(YEAR, cl.checkin_date) AS yr,
                        DATEPART(WEEK, cl.checkin_date) AS wk,
@@ -206,6 +222,8 @@ public static class AchievementRepository
                 FROM dbo.task_checkin_log cl
                 JOIN dbo.task t ON t.task_id = cl.task_id
                 WHERE t.user_id = @UserId AND t.status = 'Active' AND cl.checkin_type != 'Undo'
+                  AND NOT (DATEPART(YEAR, cl.checkin_date) = DATEPART(YEAR, GETDATE())
+                           AND DATEPART(WEEK, cl.checkin_date) = DATEPART(WEEK, GETDATE()))
                 GROUP BY DATEPART(YEAR, cl.checkin_date), DATEPART(WEEK, cl.checkin_date)
             )
             SELECT CASE WHEN EXISTS (
@@ -215,6 +233,7 @@ public static class AchievementRepository
             ) THEN 1 ELSE 0 END;
 
             -- 10. Daily 習慣是否曾單週打卡 7 天（每日堅守者）
+            -- 只計算已結束的週（排除當週）
             WITH DailyWeekly AS (
                 SELECT t.task_id,
                        DATEPART(YEAR, cl.checkin_date) AS yr,
@@ -223,15 +242,17 @@ public static class AchievementRepository
                 FROM dbo.task_checkin_log cl
                 JOIN dbo.task t ON t.task_id = cl.task_id
                 WHERE t.user_id = @UserId AND t.rhythm_type = 'Daily' AND cl.checkin_type != 'Undo'
+                  AND NOT (DATEPART(YEAR, cl.checkin_date) = DATEPART(YEAR, GETDATE())
+                           AND DATEPART(WEEK, cl.checkin_date) = DATEPART(WEEK, GETDATE()))
                 GROUP BY t.task_id, DATEPART(YEAR, cl.checkin_date), DATEPART(WEEK, cl.checkin_date)
             )
             SELECT CASE WHEN EXISTS (SELECT 1 FROM DailyWeekly WHERE day_cnt >= 7)
                         THEN 1 ELSE 0 END;
 
             -- 11. 帳號年齡（天）
-            SELECT ISNULL(DATEDIFF(DAY, MIN(created_at), GETDATE()), 0)
-            FROM dbo.user_account
-            WHERE user_id = @UserId;
+            SELECT ISNULL(DATEDIFF(DAY, MIN(CreatedAt), GETDATE()), 0)
+            FROM dbo.[User]
+            WHERE UserId = @UserId;
             """;
 
         await using var conn = new SqlConnection(connectionString);

@@ -37,7 +37,7 @@ export async function fetchFilteredPosts(params) {
  *   失敗只會在 console 印出警告，不影響使用者操作。
  *
  * @param {number} postId     - 目標貼文 ID（對應 Diary.DiaryId）
- * @param {string} type       - 反應類型：like | peace | hug | empathy | cheer
+ * @param {string} type       - 反應類型：like | love | hug | empathy | cheer
  * @param {string} visitorId  - 來自 identity.js 的身份 ID（匿名 UUID 或真實 userId）
  *                              後端用此欄位做 DB 層防重複（PostReactionLog UNIQUE 約束）
  */

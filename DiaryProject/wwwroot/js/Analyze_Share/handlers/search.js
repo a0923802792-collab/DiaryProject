@@ -22,6 +22,7 @@ import { fetchFilteredPosts } from '../api.js';
 import { renderCategories } from '../render/categories.js';
 import { renderPostList } from '../render/postList.js';
 import { renderDetail } from '../render/detail.js';
+import { getVisitorId } from '../identity.js';
 
 // IntersectionObserver 相關（模組層級，只初始化一次）
 let _sentinel = null;
@@ -52,10 +53,11 @@ export async function handleSearch(page = 1) {
     // 讀取搜尋框，?.trim() 避免前後空白影響搜尋，?? '' 確保不為 null
     const q = document.getElementById('search-input')?.value?.trim() ?? '';
 
-    // 組裝 Query String，sort 是必填；category / q 有值才加
+    // 組裝 Query String，sort 是必填；category / q / visitorId 有值才加
     const params = new URLSearchParams({ sort: currentSort });
     if (q) params.set('q', q);
     if (currentCategory && currentCategory !== '全部') params.set('category', currentCategory);
+    params.set('visitorId', getVisitorId());
 
     // 分頁參數
     params.set('page', page);
