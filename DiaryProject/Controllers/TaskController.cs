@@ -68,25 +68,30 @@ namespace DiaryProject.Controllers
 
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Checkin(TaskCheckinViewModel vm)
         {
             if (!ModelState.IsValid)
             {
-                return RedirectToAction("Index");
-
+                TempData["ToastMessage"] = "任務完成失敗";
+                return RedirectToAction("Index", new { selectedTaskId = vm.TaskId });
             }
+
             bool result = _itaskService.CheckinTask(vm);
+
             if (!result)
             {
-                //處理打卡失敗的情況，例如顯示錯誤訊息
-                TempData["Msg"] = "今天已完成任務";
+                TempData["ToastMessage"] = "今天已完成過這個任務";
             }
             else
             {
-                TempData["Msg"] = "任務完成~";
+                TempData["ToastMessage"] = "任務完成！";
             }
-            return RedirectToAction("Index");
+
+            return RedirectToAction("Index", new { selectedTaskId = vm.TaskId });
         }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Archive(int taskId)
@@ -96,7 +101,10 @@ namespace DiaryProject.Controllers
             {
                 return RedirectToAction("Welcome", "Entry");
             }
+
             _itaskService.ArchiveTask(taskId, userId.Value);
+            TempData["ToastMessage"] = "任務已刪除";
+
             return RedirectToAction("Index");
         }
 

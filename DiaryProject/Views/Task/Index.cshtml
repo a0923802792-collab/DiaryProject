@@ -12,10 +12,21 @@
 	var hasAnyTask = dailyTasks.Any() || nonDailyTasks.Any();
 }
 
+@* <div style="position:fixed; top:100px; right:24px; z-index:99999; background:red; color:white; padding:12px;">
+	DEBUG: @ViewBag.ToastMessage
+</div> *@
+
 @section Styles {
 	<link rel="stylesheet" href="~/css/task_page.css" />
 }
 
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.ToastMessage as string))
+{
+    <div id="task-toast" class="task-toast show">
+        @ViewBag.ToastMessage
+    </div>
+}
 <header class="page-header">
 	<div>
 		<h2>任務中心</h2>
@@ -224,4 +235,20 @@
 	</section>
 </div>
 
-<script src="~/js/TaskPage.js"></script>
+@section Scripts {
+	<script src="~/js/TaskPage.js"></script>
+	<script>
+		window.addEventListener('load', function () {
+			const toast = document.getElementById('task-toast');
+			if (toast) {
+				setTimeout(() => {
+					toast.classList.remove('show');
+
+					setTimeout(() => {
+						toast.remove();
+					}, 300);
+				}, 2200);
+			}
+		});
+	</script>
+}

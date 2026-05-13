@@ -315,4 +315,7 @@
     bindTaskCards();
     bindEditButtons();
     bindDeleteButtons();
+
+
 });
+
