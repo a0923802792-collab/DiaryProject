@@ -225,3 +225,73 @@
     }
 }
 
+
+/* ============================================================
+   標籤篩選下拉選單修正
+   ------------------------------------------------------------
+   修正：
+   1. checkbox 與文字被擠成直排
+   2. 「全部」按鈕與 checkbox 項目排版不一致
+   3. 下拉選單寬度太窄造成文字換行
+   ============================================================ */
+
+/* 標籤下拉選單本體 */
+.diary-list-page #tagFilterMenu {
+    min-width: 150px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+}
+
+/* 標籤下拉選單每一列：包含「全部」與 checkbox 項目 */
+.diary-list-page #tagFilterMenu .filter-menu-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+
+    width: 100%;
+    min-height: 32px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text-muted);
+    text-align: left;
+    white-space: nowrap;
+
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+
+    cursor: pointer;
+}
+
+/* checkbox 固定大小，不讓它被 flex 壓縮 */
+.diary-list-page #tagFilterMenu .filter-menu-item input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+/* 標籤文字固定橫排 */
+.diary-list-page #tagFilterMenu .filter-menu-item span {
+    display: inline-block;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+}
+
+/* 「全部」是 button，清掉瀏覽器預設按鈕樣式 */
+.diary-list-page #tagFilterMenu .tag-clear-item {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+}
+
+/* 滑過選項時給一點提示 */
+.diary-list-page #tagFilterMenu .filter-menu-item:hover {
+    background: #f7f2e8;
+    border-radius: 8px;
+}
