@@ -270,8 +270,8 @@
             <!-- 趨勢圖表 -->
             <div class="section-divider"><span>📈 打卡趨勢</span></div>
 
-            <!-- Row 1：打卡時間序列 + 週目標達成率 -->
-            <div class="chart-grid">
+            <!-- Row 1：每月打卡次數 + 打卡星期分布 + 任務類型比例（三等份） -->
+            <div class="chart-grid chart-grid-3">
                 <div class="chart-card">
                     <h2 id="title-task-timeseries"><span class="chart-icon">📅</span> 每月打卡次數</h2>
                     <div class="chart-wrap">
@@ -282,19 +282,6 @@
                     </div>
                     <div id="rs-task-timeseries" class="range-slider" style="display:none"></div>
                 </div>
-                <div class="chart-card">
-                    <h2><span class="chart-icon">🎯</span> 週目標達成率（週一～週日）</h2>
-                    <div class="chart-wrap">
-                        <div class="chart-loading">
-                            <div class="spinner"></div><span>載入中…</span>
-                        </div>
-                        <canvas id="chart-task-weekly-goal"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Row 2：打卡星期分布 + 任務類型比例 -->
-            <div class="chart-grid">
                 <div class="chart-card">
                     <h2><span class="chart-icon">📆</span> 打卡星期分布</h2>
                     <div class="chart-wrap">

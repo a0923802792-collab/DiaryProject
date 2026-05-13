@@ -86,6 +86,13 @@
 </div>
 
 @section Scripts {
+    @{
+        var userId = Context.Session.GetInt32("UserId");
+    }
+    @if (userId.HasValue)
+    {
+        <script>window.__currentUser = { id: "@userId.Value" };</script>
+    }
     <script type="module" src="~/js/Analyze_Share/main.js" asp-append-version="true"></script>
 }
 

@@ -189,7 +189,7 @@ public static class ChartRepository
             INNER JOIN dbo.DiaryTag dt ON dt.TagId = t.TagId
             INNER JOIN dbo.Diary d    ON d.DiaryId = dt.DiaryId
             WHERE d.Status = 'published'
-              AND (t.TagType = 'system' OR t.TagType = 'Category')
+              AND (t.TagType = 'system' OR t.TagType = 'Category' OR t.TagType = 'custom')
             {range.ToSqlCondition()}{userFilter}
             GROUP BY t.TagName
             ORDER BY Cnt DESC;
@@ -443,9 +443,9 @@ public static class TaskRepository
             "day" => ("FORMAT(cl.checkin_date, 'MM/dd')",
                        "FORMAT(cl.checkin_date, 'MM/dd')",
                        "MIN(CAST(cl.checkin_date AS DATE))"),
-            "week" => ("FORMAT(DATEADD(DAY, 2 - DATEPART(WEEKDAY, cl.checkin_date), cl.checkin_date), 'MM/dd')",
-                       "FORMAT(DATEADD(DAY, 2 - DATEPART(WEEKDAY, cl.checkin_date), cl.checkin_date), 'MM/dd')",
-                       "MIN(DATEADD(DAY, 2 - DATEPART(WEEKDAY, cl.checkin_date), cl.checkin_date))"),
+            "week" => ("FORMAT(DATEADD(DAY, 1 - DATEPART(WEEKDAY, cl.checkin_date), cl.checkin_date), 'MM/dd')",
+                       "FORMAT(DATEADD(DAY, 1 - DATEPART(WEEKDAY, cl.checkin_date), cl.checkin_date), 'MM/dd')",
+                       "MIN(DATEADD(DAY, 1 - DATEPART(WEEKDAY, cl.checkin_date), cl.checkin_date))"),
             _ => ("FORMAT(cl.checkin_date, 'yyyy-MM')",
                        "FORMAT(cl.checkin_date, 'yyyy-MM')",
                        "FORMAT(cl.checkin_date, 'yyyy-MM')")
