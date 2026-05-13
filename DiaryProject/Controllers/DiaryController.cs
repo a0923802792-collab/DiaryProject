@@ -1,10 +1,10 @@
-﻿using DiaryProject.Models;
+using DiaryProject.Models;
 using DiaryProject.ViewModels.Diary;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Text.Json;
-// 備註
+
 namespace DiaryProject.Controllers
 {
     public class DiaryController : Controller
@@ -28,7 +28,15 @@ namespace DiaryProject.Controllers
             return RedirectToAction("Welcome", "Entry");
         }
 
-        public IActionResult DiaryList()
+        public IActionResult DiaryList(
+            string? templateType,
+            string? visibility,
+            string? keyword,
+            string? sortOrder,
+            string? period,
+            string? startDate,
+            string? endDate,
+            string? tags)
         {
             var userId = GetCurrentUserId();
             if (!userId.HasValue)
@@ -38,15 +46,50 @@ namespace DiaryProject.Controllers
 
             using var readTransaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted);
 
-            var rows = _context.Diaries
+            // 先整理列表頁傳進來的篩選條件，避免空白或不合法的值影響查詢。
+            // 這些參數主要用在「從詳情頁返回列表」時，讓列表可以還原原本的篩選狀態。
+            templateType = NormalizeTemplateType(templateType);     // normal / mood
+            visibility = NormalizeVisibility(visibility);           // private / shared
+            keyword = NormalizeKeyword(keyword);                    // 搜尋字
+            sortOrder = NormalizeSortOrder(sortOrder);              // desc / asc
+            period = NormalizePeriod(period);                       // all / week / month / range
+            var selectedTags = NormalizeTags(tags);                 // 多選標籤，以逗號分隔
+            var parsedStartDate = NormalizeDateOnly(startDate);      // 特定範圍：開始日期
+            var parsedEndDate = NormalizeDateOnly(endDate);          // 特定範圍：結束日期
+
+            // 把目前篩選條件放進 ViewBag，讓 DiaryList.cshtml 與 diary_index.js 可以還原畫面狀態。
+            ViewBag.FilterTemplateType = templateType;
+            ViewBag.FilterVisibility = visibility;
+            ViewBag.FilterKeyword = keyword;
+            ViewBag.FilterSortOrder = sortOrder;
+            ViewBag.FilterPeriod = period;
+            ViewBag.FilterStartDate = parsedStartDate?.ToString("yyyy-MM-dd");
+            ViewBag.FilterEndDate = parsedEndDate?.ToString("yyyy-MM-dd");
+            ViewBag.FilterTags = string.Join(",", selectedTags);
+
+            // 先建立 IQueryable，後面才可以依條件逐步加上 Where。
+            // 這裡只抓目前登入使用者、且已發布的日記。
+            var listQuery = _context.Diaries
                 .AsNoTracking()
-                .Where(d => d.UserId == userId.Value && d.Status == "published")
-                .OrderByDescending(d => d.DiaryDate)
-                .ThenByDescending(d => d.DiaryTime)
+                .Where(d => d.UserId == userId.Value && d.Status == "published");
+
+            // 套用和詳情頁上一篇 / 下一篇相同的篩選規則。
+            listQuery = ApplyDiaryListFilters(
+                listQuery,
+                templateType,
+                visibility,
+                keyword,
+                period,
+                parsedStartDate,
+                parsedEndDate,
+                selectedTags);
+
+            var rows = ApplyDiaryListOrdering(listQuery, sortOrder)
                 .Select(d => new
                 {
                     d.DiaryId,
                     d.DiaryDate,
+                    d.DiaryTime,
                     d.TemplateType,
                     d.Visibility,
                     d.PreviewText,
@@ -58,6 +101,10 @@ namespace DiaryProject.Controllers
                     DrawingCount = d.DiaryMedia.Count(m => m.MediaType == "drawing")
                 })
                 .ToList();
+
+            // 將每篇日記的時間另外存到 ViewBag。
+            // 這樣 DiaryList.cshtml 不必修改 ViewModel，也能把正確時間傳給前端 JS 排序。
+            ViewBag.DiaryTimeById = rows.ToDictionary(x => (int)x.DiaryId, x => x.DiaryTime.ToString("HH:mm"));
 
             var diaryIds = rows.Select(d => d.DiaryId).ToList();
             if (diaryIds.Count == 0)
@@ -133,9 +180,9 @@ namespace DiaryProject.Controllers
                     IsShared = row.Visibility == "shared"
                 };
 
-                if (tagsByDiary.TryGetValue(row.DiaryId, out var tags))
+                if (tagsByDiary.TryGetValue(row.DiaryId, out var diaryTags))
                 {
-                    vm.TagName.AddRange(tags);
+                    vm.TagName.AddRange(diaryTags);
                 }
 
                 if (row.Visibility == "shared" && reactionsByDiary.TryGetValue(row.DiaryId, out var reactionMap))
@@ -157,7 +204,16 @@ namespace DiaryProject.Controllers
             return View(model);
         }
 
-        public IActionResult DiaryDetail(int id)
+        public IActionResult DiaryDetail(
+            int id,
+            string? templateType,
+            string? visibility,
+            string? keyword,
+            string? sortOrder,
+            string? period,
+            string? startDate,
+            string? endDate,
+            string? tags)
         {
             var userId = GetCurrentUserId();
             if (!userId.HasValue)
@@ -166,6 +222,27 @@ namespace DiaryProject.Controllers
             }
 
             using var readTransaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted);
+
+            // 詳情頁也要接收列表頁的篩選條件。
+            // 這樣「上一篇 / 下一篇」才會在篩選後的結果內切換，而不是全部日記一起切換。
+            templateType = NormalizeTemplateType(templateType);
+            visibility = NormalizeVisibility(visibility);
+            keyword = NormalizeKeyword(keyword);
+            sortOrder = NormalizeSortOrder(sortOrder);
+            period = NormalizePeriod(period);
+            var selectedTags = NormalizeTags(tags);
+            var parsedStartDate = NormalizeDateOnly(startDate);
+            var parsedEndDate = NormalizeDateOnly(endDate);
+
+            // 放進 ViewBag 給 DiaryDetail.cshtml 使用，讓返回 / 上一篇 / 下一篇連結可以保留篩選條件。
+            ViewBag.FilterTemplateType = templateType;
+            ViewBag.FilterVisibility = visibility;
+            ViewBag.FilterKeyword = keyword;
+            ViewBag.FilterSortOrder = sortOrder;
+            ViewBag.FilterPeriod = period;
+            ViewBag.FilterStartDate = parsedStartDate?.ToString("yyyy-MM-dd");
+            ViewBag.FilterEndDate = parsedEndDate?.ToString("yyyy-MM-dd");
+            ViewBag.FilterTags = string.Join(",", selectedTags);
 
             if (id <= 0)
             {
@@ -214,23 +291,39 @@ namespace DiaryProject.Controllers
             vm.TagName.AddRange(row.Tags.Select(t => t.TagName));
             vm.MediaUrl.AddRange(row.DiaryMedia.OrderBy(m => m.CreatedAt).Select(m => NormalizeMediaUrl(m.FileUrl)));
 
-            ViewBag.PrevId = _context.Diaries
+            // 建立「詳情頁前後篇」使用的排序清單。
+            // 重點：這裡必須和 DiaryList() 使用同一套篩選與排序，
+            // 才能做到「下一篇 = 列表頁目前看到的下一張卡片」。
+            var detailNavQuery = _context.Diaries
                 .AsNoTracking()
-                .Where(d => d.UserId == userId.Value && d.Status == "published"
-                    && (d.DiaryDate > row.DiaryDate || (d.DiaryDate == row.DiaryDate && d.DiaryTime > row.DiaryTime)))
-                .OrderBy(d => d.DiaryDate)
-                .ThenBy(d => d.DiaryTime)
-                .Select(d => (int?)d.DiaryId)
-                .FirstOrDefault();
+                .Where(d => d.UserId == userId.Value && d.Status == "published");
 
-            ViewBag.NextId = _context.Diaries
-                .AsNoTracking()
-                .Where(d => d.UserId == userId.Value && d.Status == "published"
-                    && (d.DiaryDate < row.DiaryDate || (d.DiaryDate == row.DiaryDate && d.DiaryTime < row.DiaryTime)))
-                .OrderByDescending(d => d.DiaryDate)
-                .ThenByDescending(d => d.DiaryTime)
-                .Select(d => (int?)d.DiaryId)
-                .FirstOrDefault();
+            // 套用從列表頁帶進來的篩選條件，例如：只看心情日記、只看已分享、關鍵字搜尋。
+            detailNavQuery = ApplyDiaryListFilters(
+                detailNavQuery,
+                templateType,
+                visibility,
+                keyword,
+                period,
+                parsedStartDate,
+                parsedEndDate,
+                selectedTags);
+
+            var orderedDiaryIds = ApplyDiaryListOrdering(detailNavQuery, sortOrder)
+                .Select(d => (int)d.DiaryId)
+                .ToList();
+
+            var currentIndex = orderedDiaryIds.IndexOf((int)row.DiaryId);
+
+            // currentIndex - 1：排序清單中的上一筆，也就是列表頁上方 / 前一張卡片。
+            ViewBag.PrevId = currentIndex > 0
+                ? orderedDiaryIds[currentIndex - 1]
+                : (int?)null;
+
+            // currentIndex + 1：排序清單中的下一筆，也就是列表頁下方 / 後一張卡片。
+            ViewBag.NextId = currentIndex >= 0 && currentIndex < orderedDiaryIds.Count - 1
+                ? orderedDiaryIds[currentIndex + 1]
+                : (int?)null;
 
             return View(vm);
         }
@@ -629,6 +722,162 @@ namespace DiaryProject.Controllers
 
             _context.SaveChanges();
             return Ok(new { ok = true, deletedCount = rows.Count });
+        }
+
+        /// <summary>
+        /// 套用日記列表頁與詳情頁前後篇共用的篩選條件。
+        /// 只要篩選規則集中在這裡，DiaryList 和 DiaryDetail 就不容易出現排序 / 篩選不一致。
+        /// </summary>
+        private static IQueryable<Diary> ApplyDiaryListFilters(
+            IQueryable<Diary> query,
+            string? templateType,
+            string? visibility,
+            string? keyword,
+            string? period,
+            DateOnly? startDate,
+            DateOnly? endDate,
+            List<string> selectedTags)
+        {
+            // 篩選日記模板：normal = 一般日記、mood = 心情日記。
+            if (!string.IsNullOrWhiteSpace(templateType))
+            {
+                query = query.Where(d => d.TemplateType == templateType);
+            }
+
+            // 篩選分享狀態：private = 私人、shared = 已分享。
+            if (!string.IsNullOrWhiteSpace(visibility))
+            {
+                query = query.Where(d => d.Visibility == visibility);
+            }
+
+            // 標籤篩選：前端是「勾選任一標籤即符合」，所以後端也使用 Any。
+            if (selectedTags.Count > 0)
+            {
+                query = query.Where(d => d.Tags.Any(t => selectedTags.Contains(t.TagName)));
+            }
+
+            // 期間篩選：讓從詳情頁返回列表、或詳情頁上一篇 / 下一篇時，都能套用同樣日期範圍。
+            if (period == "week")
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var offset = today.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)today.DayOfWeek - 1;
+                var weekStart = today.AddDays(-offset);
+                var weekEnd = weekStart.AddDays(6);
+                query = query.Where(d => d.DiaryDate >= weekStart && d.DiaryDate <= weekEnd);
+            }
+            else if (period == "month")
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var monthStart = new DateOnly(today.Year, today.Month, 1);
+                var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+                query = query.Where(d => d.DiaryDate >= monthStart && d.DiaryDate <= monthEnd);
+            }
+            else if (period == "range" && startDate.HasValue && endDate.HasValue)
+            {
+                query = query.Where(d => d.DiaryDate >= startDate.Value && d.DiaryDate <= endDate.Value);
+            }
+
+            // 關鍵字搜尋：同時搜尋一般日記標題 / 內容、心情日記三個引導欄位，以及標籤名稱。
+            // 日期文字搜尋主要交給前端 JS 處理；後端這裡保留內容與標籤搜尋，避免 LINQ 轉 SQL 時出現 ToString 無法轉譯問題。
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(d =>
+                    (d.PreviewText != null && d.PreviewText.Contains(keyword)) ||
+                    d.Tags.Any(t => t.TagName.Contains(keyword)) ||
+                    (d.DiaryNormal != null &&
+                        ((d.DiaryNormal.Title != null && d.DiaryNormal.Title.Contains(keyword)) ||
+                         (d.DiaryNormal.Body != null && d.DiaryNormal.Body.Contains(keyword)))) ||
+                    (d.DiaryMood != null &&
+                        ((d.DiaryMood.EventNote != null && d.DiaryMood.EventNote.Contains(keyword)) ||
+                         (d.DiaryMood.ThoughtNote != null && d.DiaryMood.ThoughtNote.Contains(keyword)) ||
+                         (d.DiaryMood.NeedNote != null && d.DiaryMood.NeedNote.Contains(keyword)))));
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// 套用列表頁排序。
+        /// desc：新到舊；asc：舊到新。
+        /// DiaryId 是最後排序依據，避免同日期、同時間時順序不穩定。
+        /// </summary>
+        private static IOrderedQueryable<Diary> ApplyDiaryListOrdering(IQueryable<Diary> query, string? sortOrder)
+        {
+            return sortOrder == "asc"
+                ? query.OrderBy(d => d.DiaryDate)
+                    .ThenBy(d => d.DiaryTime)
+                    .ThenBy(d => d.DiaryId)
+                : query.OrderByDescending(d => d.DiaryDate)
+                    .ThenByDescending(d => d.DiaryTime)
+                    .ThenByDescending(d => d.DiaryId);
+        }
+
+        /// <summary>
+        /// 只允許合法的模板篩選值，避免網址亂帶參數時影響查詢。
+        /// </summary>
+        private static string? NormalizeTemplateType(string? templateType)
+        {
+            var value = (templateType ?? string.Empty).Trim().ToLowerInvariant();
+            return value is "normal" or "mood" ? value : null;
+        }
+
+        /// <summary>
+        /// 只允許合法的分享狀態篩選值。
+        /// </summary>
+        private static string? NormalizeVisibility(string? visibility)
+        {
+            var value = (visibility ?? string.Empty).Trim().ToLowerInvariant();
+            return value is "private" or "shared" ? value : null;
+        }
+
+        /// <summary>
+        /// 只允許合法排序值；沒有指定時預設由新到舊。
+        /// </summary>
+        private static string NormalizeSortOrder(string? sortOrder)
+        {
+            var value = (sortOrder ?? string.Empty).Trim().ToLowerInvariant();
+            return value == "asc" ? "asc" : "desc";
+        }
+
+        /// <summary>
+        /// 只允許合法期間值；沒有指定時視為全部。
+        /// </summary>
+        private static string NormalizePeriod(string? period)
+        {
+            var value = (period ?? string.Empty).Trim().ToLowerInvariant();
+            return value is "week" or "month" or "range" ? value : "all";
+        }
+
+        /// <summary>
+        /// 整理搜尋關鍵字：去除前後空白，空字串就當作沒有搜尋。
+        /// </summary>
+        private static string? NormalizeKeyword(string? keyword)
+        {
+            var value = (keyword ?? string.Empty).Trim();
+            return string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+
+        /// <summary>
+        /// 整理多選標籤：網址會用逗號分隔，例如：工作,家庭。
+        /// </summary>
+        private static List<string> NormalizeTags(string? tags)
+        {
+            return (tags ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        /// <summary>
+        /// 將 yyyy-MM-dd 轉成 DateOnly；格式錯誤就忽略。
+        /// </summary>
+        private static DateOnly? NormalizeDateOnly(string? dateText)
+        {
+            return DateOnly.TryParse((dateText ?? string.Empty).Trim(), out var date)
+                ? date
+                : null;
         }
 
         private List<DiaryMedium> BuildPersistedMediaItems(string? mediaItemsJson, DateOnly diaryDate)
