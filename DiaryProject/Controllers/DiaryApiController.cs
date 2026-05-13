@@ -91,34 +91,5 @@ namespace DiaryProject.Controllers
             });
         }
 
-        [HttpGet("month-status")]
-        public IActionResult MonthStatus([FromQuery] int year, [FromQuery] int month)
-        {
-            var sessionUserId = HttpContext.Session.GetInt32("UserId");
-            if (!sessionUserId.HasValue) return Unauthorized();
-
-            var startDate = new DateOnly(year, month, 1);
-            var endDate = startDate.AddMonths(1);
-
-            var diaries = _context.Diaries
-                .AsNoTracking()
-                .Include(d => d.Moods)
-                .Where(d => d.UserId == sessionUserId.Value
-                    && d.Status == "published"
-                    && d.DiaryDate >= startDate
-                    && d.DiaryDate < endDate)
-                .Select(d => new
-                {
-                    date = d.DiaryDate.ToString("yyyy / MM / dd"),
-                    diaryId = d.DiaryId,
-                    previewText = d.PreviewText,
-                    // 取第一個 mood 當「主要心情」
-                    dominantMoodId = d.Moods.Select(m => m.MoodId).FirstOrDefault(),
-                    dominantMoodEmoji = d.Moods.Select(m => m.MoodEmoji).FirstOrDefault()
-                })
-                .ToList();
-
-            return Ok(diaries);
-        }
     }
 }
