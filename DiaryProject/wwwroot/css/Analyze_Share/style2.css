@@ -94,18 +94,18 @@
 }
 
 .tag.active {
-    background: var(--mo-olive);
-    border-color: var(--mo-olive);
+    background: #2563eb;
+    border-color: #2563eb;
     color: #ffffff;
     font-weight: 600;
 }
 
 .publish-btn {
     padding: 7px 22px;
-    border: 1px solid var(--mo-black);
+    border: 1px solid #2563eb;
     border-radius: 9999px;
     background: #ffffff;
-    color: #1a1a1a;
+    color: #2563eb;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -114,7 +114,7 @@
 }
 
 .publish-btn:hover {
-    background: var(--mo-black);
+    background: #2563eb;
     color: #ffffff;
 }
 
@@ -274,17 +274,17 @@
 
 .post-actions button {
     padding: 4px 12px;
-    border: 1px solid var(--mo-black);
+    border: 1px solid #2563eb;
     border-radius: 9999px;
     background: #ffffff;
     font-size: 0.78rem;
-    color: var(--mo-brown);
+    color: #2563eb;
     cursor: pointer;
     transition: all .15s;
 }
 
 .post-actions button:hover {
-    background: var(--mo-cream);
+    background: #dbeafe;
 }
 
 /* ================================================================

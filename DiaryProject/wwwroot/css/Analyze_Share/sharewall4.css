@@ -253,8 +253,8 @@
 
 /* 已按過：綠色底 + 白色文字 + 圖示反白 */
 .post-actions button[data-reacted] {
-    background: var(--mo-olive);
-    border-color: var(--mo-olive);
+    background: #2563eb;
+    border-color: #2563eb;
     color: #ffffff;
     cursor: default;
 }
@@ -273,9 +273,9 @@
 }
 
 .category-tags .tag.active {
-    background-color: var(--mo-olive);
+    background-color: #2563eb;
     color: #ffffff;
-    border-color: var(--mo-olive);
+    border-color: #2563eb;
 }
 
 /* ---------------------------------------------------------------------
@@ -288,7 +288,7 @@
 }
 
 .filter-tag.active {
-    background-color: var(--mo-olive);
+    background-color: #2563eb;
     color: #ffffff;
-    border-color: var(--mo-olive);
+    border-color: #2563eb;
 }

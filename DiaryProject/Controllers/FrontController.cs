@@ -15,6 +15,8 @@ namespace DiaryProject.Controllers
             _db = db;
         }
 
+
+
         private int? ResolveUserId(int? userId)
         {
             var sessionUserId = HttpContext.Session.GetInt32("UserId");
