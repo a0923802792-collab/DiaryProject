@@ -90,5 +90,6 @@ namespace DiaryProject.Controllers
                 stressValue = diary.DiaryMood?.StressValue ?? 0
             });
         }
+
     }
 }

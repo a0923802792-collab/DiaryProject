@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Battery_x5F_charging" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65.05 65">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-2 {
+        fill: none;
+        stroke: #c49a6c;
+        stroke-width: 2px;
+      }
+
+      .cls-2 {
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <path class="cls-1" d="M45.78,6.12h-6v-3c0-1.1-.9-2-2-2h-11c-1.1,0-2,.9-2,2v3h-7c-1.1,0-2,.9-2,2v53c0,1.1.9,2,2,2h28c1.1,0,2-.9,2-2V8.12c0-1.1-.9-2-2-2Z"/>
+  <polygon class="cls-2" points="27.52 53.3 39 29.14 31.78 31.63 35.07 14.9 23.78 38.06 31.11 35.02 27.52 53.3"/>
+</svg>
