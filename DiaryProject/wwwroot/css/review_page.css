@@ -253,6 +253,7 @@ button.review-calendar-cell {
 .review-calendar-cell .day-number {
     font-weight: 900;
     font-size: 18px;
+    color: var(--mo-black);
 }
 
 .review-calendar-cell .day-info {
@@ -260,7 +261,12 @@ button.review-calendar-cell {
     gap: 0.2rem;
     font-size: 15px;
     line-height: 1.35;
+    color: var(--mo-black);
 }
+
+    .review-calendar-cell .day-info span {
+        color: var(--mo-black);
+    }
 
 .review-calendar-cell.has-diary {
     background: white;
@@ -268,20 +274,22 @@ button.review-calendar-cell {
 
 .review-calendar-cell.no-diary {
     background: rgba(255, 255, 255, 0.58);
-    color: var(--mo-brown);
+    color: var(--mo-black);
 }
 
     .review-calendar-cell.no-diary .day-info {
-        color: rgba(120, 108, 86, 0.7);
+        color: var(--mo-black);
     }
 
 .review-calendar-cell.is-selected {
     background: var(--mo-olive);
-    color: black;
+    color: var(--mo-black);
 }
 
-    .review-calendar-cell.is-selected .day-info {
-        color: black;
+    .review-calendar-cell.is-selected .day-number,
+    .review-calendar-cell.is-selected .day-info,
+    .review-calendar-cell.is-selected .day-info span {
+        color: var(--mo-black);
     }
 
 .review-calendar-cell.is-outside-month {
@@ -343,8 +351,143 @@ button.review-calendar-cell {
 
 
 /* ============================================================
-   7. Photo Review｜照片牆
-   主內容：拼貼感，只顯示照片
+   7. Featured Review｜精選片段
+   接近截圖比例：橫向、偏矮、不太胖
+   ============================================================ */
+
+.review-featured-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(300px, 1fr));
+    gap: 4rem;
+    align-items: stretch;
+}
+
+.review-featured-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 1px solid var(--mo-black);
+    border-radius: 0.9rem;
+    overflow: hidden;
+    background: white;
+    cursor: pointer;
+    box-shadow: var(--soft-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .review-featured-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(24, 48, 45, 0.1);
+    }
+
+    .review-featured-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        display: block;
+        background: rgba(255, 255, 255, 0.7);
+    }
+
+    .review-featured-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( 180deg, transparent 42%, rgba(0, 0, 0, 0.36) );
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .review-featured-card::after {
+        content: "精選相片";
+        position: absolute;
+        left: 0.85rem;
+        bottom: 0.75rem;
+        z-index: 2;
+        border-radius: 9999px;
+        padding: 0.3rem 0.75rem;
+        color: white;
+        background: rgba(0, 0, 0, 0.38);
+        font-size: 12px;
+        font-weight: 900;
+        backdrop-filter: blur(4px);
+    }
+
+
+/* ============================================================
+   8. Photo Wall Timeline｜下方照片牆
+   按月份 / 日期分組，照片只顯示縮圖
+   ============================================================ */
+
+.review-photo-timeline {
+    display: grid;
+    gap: 2rem;
+}
+
+.review-photo-month {
+    display: grid;
+    gap: 1rem;
+}
+
+    .review-photo-month > h2 {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: 32px;
+        color: var(--mo-black);
+    }
+
+.review-photo-day-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.review-photo-day-group {
+    display: grid;
+    gap: 0.75rem;
+}
+
+    .review-photo-day-group h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 900;
+        color: var(--mo-black);
+    }
+
+.review-photo-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: flex-start;
+}
+
+.review-photo-thumb {
+    width: 160px;
+    height: 160px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+    .review-photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border: 1px solid var(--mo-black);
+        border-radius: 0.35rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .review-photo-thumb:hover img {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(24, 48, 45, 0.1);
+    }
+
+
+/* ============================================================
+   9. Old Photo Wall Compatibility
+   如果舊 Photos.cshtml 還有用 review-photo-wall，也保留樣式
    ============================================================ */
 
 .review-photo-wall {
@@ -423,63 +566,7 @@ button.review-calendar-cell {
 
 
 /* ============================================================
-   8. Featured Review｜精選片段
-   折衷版：中型卡片、規則排列、不搶照片牆主視覺
-   ============================================================ */
-
-.review-featured-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(260px, 1fr));
-    gap: 1rem;
-    align-items: stretch;
-}
-
-.review-featured-card {
-    position: relative;
-    display: block;
-    width: 100%;
-    padding: 0;
-    border: 1px solid var(--mo-black);
-    border-radius: 1.25rem;
-    overflow: hidden;
-    background: white;
-    cursor: pointer;
-    box-shadow: var(--soft-shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-    .review-featured-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 28px rgba(24, 48, 45, 0.1);
-    }
-
-    .review-featured-card img {
-        width: 100%;
-        height: 240px;
-        object-fit: cover;
-        display: block;
-        background: rgba(255, 255, 255, 0.7);
-    }
-
-    .review-featured-card::after {
-        content: "精選";
-        position: absolute;
-        left: 0.8rem;
-        bottom: 0.8rem;
-        z-index: 2;
-        border: 1px solid rgba(255, 255, 255, 0.65);
-        border-radius: 9999px;
-        padding: 0.3rem 0.75rem;
-        color: white;
-        background: rgba(0, 0, 0, 0.32);
-        font-size: 12px;
-        font-weight: 900;
-        backdrop-filter: blur(4px);
-    }
-
-
-/* ============================================================
-   9. Modal Inner
+   10. Modal Inner
    ============================================================ */
 
 .review-modal-body {
@@ -522,7 +609,78 @@ button.review-calendar-cell {
 
 
 /* ============================================================
-   10. Confirm Modal
+   11. Photo Detail Slider｜單篇日記多張照片輪播
+   ============================================================ */
+
+.review-photo-detail-slider {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 1rem;
+}
+
+.review-photo-detail-slide {
+    display: none;
+}
+
+    .review-photo-detail-slide.is-active {
+        display: block;
+    }
+
+    .review-photo-detail-slide img {
+        width: 100%;
+        max-height: 520px;
+        object-fit: contain;
+        background: #111;
+        border: 1px solid var(--mo-black);
+        border-radius: 1rem;
+    }
+
+.photo-detail-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 5;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 58px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.28);
+    color: white;
+    font-size: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+    .photo-detail-arrow:hover {
+        background: rgba(0, 0, 0, 0.45);
+    }
+
+.photo-detail-arrow-prev {
+    left: 0.75rem;
+}
+
+.photo-detail-arrow-next {
+    right: 0.75rem;
+}
+
+.photo-detail-counter {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 5;
+    color: white;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 9999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+
+/* ============================================================
+   12. Confirm Modal
    ============================================================ */
 
 .review-confirm-backdrop {
@@ -531,7 +689,7 @@ button.review-calendar-cell {
 
 
 /* ============================================================
-   11. Featured Slideshow
+   13. Featured Slideshow
    ============================================================ */
 
 .review-slideshow {
@@ -673,7 +831,6 @@ button.review-calendar-cell {
     text-align: center;
 }
 
-/* 讓幻燈片 modal 稍微寬一點 */
 .modal:has(.review-slideshow) {
     width: min(1040px, 100%);
     padding: 1rem;
@@ -682,7 +839,7 @@ button.review-calendar-cell {
 
 
 /* ============================================================
-   12. Responsive
+   14. Responsive
    ============================================================ */
 
 @media (max-width: 1280px) {
@@ -691,11 +848,11 @@ button.review-calendar-cell {
     }
 
     .review-featured-list {
-        grid-template-columns: repeat(3, minmax(220px, 1fr));
+        grid-template-columns: repeat(4, minmax(200px, 1fr));
     }
 
     .review-featured-card img {
-        height: 220px;
+        height: 130px;
     }
 }
 
@@ -716,6 +873,21 @@ button.review-calendar-cell {
 
     .review-calendar-controls {
         justify-content: flex-start;
+    }
+}
+
+@media (max-width: 960px) {
+    .review-featured-list {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+
+    .review-featured-card img {
+        height: 300px;
+    }
+
+    .review-photo-thumb {
+        width: 140px;
+        height: 140px;
     }
 }
 
@@ -742,14 +914,6 @@ button.review-calendar-cell {
             aspect-ratio: 1 / 1;
             min-height: 160px;
         }
-
-    .review-featured-list {
-        grid-template-columns: repeat(2, minmax(220px, 1fr));
-    }
-
-    .review-featured-card img {
-        height: 220px;
-    }
 }
 
 @media (max-width: 720px) {
@@ -828,247 +992,11 @@ button.review-calendar-cell {
     }
 
     .review-featured-card img {
-        height: 220px;
-    }
-
-    /* ============================================================
-   Photo Review Top Featured｜上方精選片段
-   接近圖一：橫向大卡，點擊後開幻燈片
-   ============================================================ */
-
-    .review-featured-list {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(180px, 1fr));
-        gap: 1rem;
-        align-items: stretch;
-    }
-
-    .review-featured-card {
-        position: relative;
-        display: block;
-        width: 100%;
-        padding: 0;
-        border: 1px solid var(--mo-black);
-        border-radius: 1.1rem;
-        overflow: hidden;
-        background: white;
-        cursor: pointer;
-        box-shadow: var(--soft-shadow);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .review-featured-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 28px rgba(24, 48, 45, 0.1);
-        }
-
-        .review-featured-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .review-featured-card::after {
-            content: "精選相片";
-            position: absolute;
-            left: 0.85rem;
-            bottom: 0.85rem;
-            z-index: 2;
-            border-radius: 9999px;
-            padding: 0.32rem 0.75rem;
-            color: white;
-            background: rgba(0, 0, 0, 0.38);
-            font-size: 12px;
-            font-weight: 900;
-            backdrop-filter: blur(4px);
-        }
-
-        .review-featured-card::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient( 180deg, transparent 42%, rgba(0, 0, 0, 0.32) );
-            z-index: 1;
-            pointer-events: none;
-        }
-
-
-    /* ============================================================
-   Photo Wall Timeline｜下方照片牆
-   按月份 / 日期分組，照片只顯示縮圖
-   ============================================================ */
-
-    .review-photo-timeline {
-        display: grid;
-        gap: 2rem;
-    }
-
-    .review-photo-month {
-        display: grid;
-        gap: 1rem;
-    }
-
-        .review-photo-month > h2 {
-            margin: 0;
-            font-family: var(--font-serif);
-            font-size: 32px;
-            color: var(--mo-black);
-        }
-
-    .review-photo-day-list {
-        display: grid;
-        gap: 1.5rem;
-    }
-
-    .review-photo-day-group {
-        display: grid;
-        gap: 0.75rem;
-    }
-
-        .review-photo-day-group h3 {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 900;
-            color: var(--mo-black);
-        }
-
-    .review-photo-strip {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.85rem;
-        align-items: flex-start;
+        height: 300px;
     }
 
     .review-photo-thumb {
-        width: 160px;
-        height: 160px;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        cursor: pointer;
-    }
-
-        .review-photo-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            border: 1px solid var(--mo-black);
-            border-radius: 0.35rem;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .review-photo-thumb:hover img {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 28px rgba(24, 48, 45, 0.1);
-        }
-
-
-    /* ============================================================
-   Photo Detail Slider｜單篇日記多張照片輪播
-   ============================================================ */
-
-    .review-photo-detail-slider {
-        position: relative;
-        width: 100%;
-        overflow: hidden;
-        border-radius: 1rem;
-    }
-
-    .review-photo-detail-slide {
-        display: none;
-    }
-
-        .review-photo-detail-slide.is-active {
-            display: block;
-        }
-
-        .review-photo-detail-slide img {
-            width: 100%;
-            max-height: 520px;
-            object-fit: contain;
-            background: #111;
-            border: 1px solid var(--mo-black);
-            border-radius: 1rem;
-        }
-
-    .photo-detail-arrow {
-        position: absolute;
-        top: 50%;
-        z-index: 5;
-        transform: translateY(-50%);
-        width: 42px;
-        height: 58px;
-        border-radius: 9999px;
-        border: 1px solid rgba(255,255,255,0.5);
-        background: rgba(0,0,0,0.28);
-        color: white;
-        font-size: 34px;
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-    }
-
-        .photo-detail-arrow:hover {
-            background: rgba(0,0,0,0.45);
-        }
-
-    .photo-detail-arrow-prev {
-        left: 0.75rem;
-    }
-
-    .photo-detail-arrow-next {
-        right: 0.75rem;
-    }
-
-    .photo-detail-counter {
-        position: absolute;
-        right: 1rem;
-        bottom: 1rem;
-        z-index: 5;
-        color: white;
-        background: rgba(0,0,0,0.35);
-        border-radius: 9999px;
-        padding: 0.25rem 0.65rem;
-        font-size: 12px;
-        font-weight: 900;
-    }
-
-
-    /* ============================================================
-   Responsive 補強
-   ============================================================ */
-
-    @media (max-width: 1280px) {
-        .review-featured-list {
-            grid-template-columns: repeat(4, minmax(180px, 1fr));
-        }
-    }
-
-    @media (max-width: 960px) {
-        .review-featured-list {
-            grid-template-columns: repeat(2, minmax(180px, 1fr));
-        }
-
-        .review-photo-thumb {
-            width: 140px;
-            height: 140px;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .review-featured-list {
-            grid-template-columns: 1fr;
-        }
-
-        .review-featured-card img {
-            height: 200px;
-        }
-
-        .review-photo-thumb {
-            width: calc(50% - 0.45rem);
-            height: 150px;
-        }
+        width: calc(50% - 0.45rem);
+        height: 150px;
     }
 }

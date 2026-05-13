@@ -196,7 +196,7 @@ namespace DiaryProject.Services.Review
                 Photos = photoItems,
                 FeaturedPhotos = photoItems
                     .Where(p => p.IsFeatured)
-                    .Take(3)
+                    .Take(4)
                     .ToList(),
                 MonthGroups = monthGroups
             };
