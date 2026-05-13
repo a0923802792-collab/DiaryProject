@@ -1,6 +1,20 @@
-﻿@model DiaryProject.ViewModels.Diary.Diary_ListAll
+@model DiaryProject.ViewModels.Diary.Diary_ListAll
 @{
     ViewData["Title"] = "日記列表";
+
+    // 從 Controller 取得每篇日記的正確時間。
+    // 這樣前端排序就不會全部變成 00:00，造成列表順序和詳情頁上一篇 / 下一篇不同。
+    var diaryTimeById = ViewBag.DiaryTimeById as System.Collections.Generic.Dictionary<int, string> ?? new System.Collections.Generic.Dictionary<int, string>();
+
+    // 這些是從詳情頁返回列表時，用來還原篩選狀態的值。
+    var filterTemplateType = ViewBag.FilterTemplateType as string ?? "";
+    var filterVisibility = ViewBag.FilterVisibility as string ?? "";
+    var filterKeyword = ViewBag.FilterKeyword as string ?? "";
+    var filterSortOrder = ViewBag.FilterSortOrder as string ?? "desc";
+    var filterPeriod = ViewBag.FilterPeriod as string ?? "all";
+    var filterStartDate = ViewBag.FilterStartDate as string ?? "";
+    var filterEndDate = ViewBag.FilterEndDate as string ?? "";
+    var filterTags = ViewBag.FilterTags as string ?? "";
 }
 
 @section Styles {
@@ -182,22 +196,63 @@
 
 @section Scripts {
     <script>
+        // 批次刪除 API 路徑。
         window.deleteDiariesUrl = '@Url.Action("DeleteDiaries", "Diary")';
+
+        // 列表頁與詳情頁的基礎路徑，給 diary_index.js 組 URL 使用。
+        window.diaryListUrl = '@Url.Action("DiaryList", "Diary")';
+        window.diaryDetailUrl = '@Url.Action("DiaryDetail", "Diary")';
+
+        // 從後端帶回的篩選條件。
+        // 用途：當使用者從詳情頁按「返回」回到列表時，可以還原原本的篩選狀態。
+        window.initialDiaryFilters = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+        {
+            templateType = filterTemplateType,
+            visibility = filterVisibility,
+            keyword = filterKeyword,
+            sortOrder = filterSortOrder,
+            period = filterPeriod,
+            startDate = filterStartDate,
+            endDate = filterEndDate,
+            tags = filterTags
+        }));
+
         window.diaryEntries = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
                     Model.Diaries.Select(d => new
                     {
+                            // 日記主鍵，點擊卡片時會用來前往詳情頁。
                             id = d.DiaryId,
+
+                            // 使用者選擇的日記日期。
                             date = d.DiaryDate,
-                            time = "00:00",
+
+                            // 正確的日記時間。
+                            // 不要寫死 00:00，否則前端排序會和後端排序不一致。
+                            time = diaryTimeById.TryGetValue(Convert.ToInt32(d.DiaryId), out var diaryTime) ? diaryTime : "00:00",
+                            // 標籤清單，給前端標籤篩選使用。
                             tags = d.TagName,
+
+                            // 一般日記標題；心情日記主要會顯示 emoji。
                             title = d.Title,
+
+                            // 卡片摘要。
                             excerpt = d.PreviewText,
                             body = d.PreviewText,
+
+                            // normal / mood，給模板篩選使用。
                             type = d.TemplateType,
+
+                            // 心情模板的 emoji。
                             emoji = d.MoodEmoji,
+
+                            // 媒體數量。
                             images = d.ImageCount,
                             drawings = d.DrawingCount,
+
+                            // 分享狀態。
                             shared = d.IsShared,
+
+                            // 分享回應統計。
                             reactions = d.Reactions
                     })
             ));
