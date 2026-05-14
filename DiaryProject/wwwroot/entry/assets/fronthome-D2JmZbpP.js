@@ -1,1 +1,0 @@
-import{a as e,n as t,o as n,r}from"./src-ClH9mGtc.js";import{t as i}from"./HomePage-CR7IjUeR.js";var a=n(e(),1),o=n(r(),1),s=t();o.createRoot(document.getElementById(`front-home-root`)).render((0,s.jsx)(a.StrictMode,{children:(0,s.jsx)(i,{})}));
