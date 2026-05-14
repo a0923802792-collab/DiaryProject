@@ -46,6 +46,91 @@ namespace DiaryProject.Controllers
             return Ok(new { moods });
         }
 
+        // =====================================================
+        // 2026-05-04
+        // 新增：取得指定年月每一天的日記狀態（給首頁星球渲染用）
+        // GET /api/diary/month-status?year=2026&month=5
+        // =====================================================
+        [HttpGet("month-status")]
+        public IActionResult MonthStatus([FromQuery] int year, [FromQuery] int month)
+        {
+            // Step 1：從 Session 取出使用者 ID（如果沒登入就拒絕）
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue || userId.Value <= 0)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
+
+            // Step 2：驗證月份參數合理（1~12）
+            if (month < 1 || month > 12)
+            {
+                return BadRequest(new { message = "月份必須是 1 到 12" });
+            }
+
+            // Step 3：算出該月的起訖日期（給資料庫查詢用）
+            var startDate = new DateOnly(year, month, 1);            // 5/1
+            var endDate = startDate.AddMonths(1);                    // 6/1（不含）
+
+            // Step 4：查當月該使用者所有「已發布」的日記
+            //         按 CreatedAt 排序，方便等下取「最早那篇」
+            var diaries = _context.Diaries
+                .AsNoTracking()
+                .Include(d => d.Moods)                               // 連帶把心情資料載入（不用第二次查詢）
+                .Where(d => d.UserId == userId.Value
+                         && d.Status == "published"
+                         && d.DiaryDate >= startDate
+                         && d.DiaryDate < endDate)
+                .OrderBy(d => d.CreatedAt)
+                .ToList();
+
+            // Step 5：把日記按「日期」分組，每天只留最早那篇
+            var diariesByDate = diaries
+                .GroupBy(d => d.DiaryDate)
+                .ToDictionary(g => g.Key, g => g.First());
+            // ↑ key 是日期、value 是該日期最早的那篇日記
+
+            // Step 6：產生「本月每一天」的回傳列表
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            var result = new List<object>();
+
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var date = new DateOnly(year, month, day);
+                var dateStr = date.ToString("yyyy-MM-dd");
+
+                if (diariesByDate.TryGetValue(date, out var diary))
+                {
+                    // 這天有日記
+                    var firstMood = diary.Moods?.FirstOrDefault();   // 取第一個心情（normal 模板會是 null）
+
+                    result.Add(new
+                    {
+                        date = dateStr,
+                        hasDiary = true,
+                        diaryId = (long?)diary.DiaryId,
+                        previewText = diary.PreviewText,
+                        moodId = firstMood?.MoodId,
+                        moodEmoji = firstMood?.MoodEmoji
+                    });
+                }
+                else
+                {
+                    // 這天沒寫日記
+                    result.Add(new
+                    {
+                        date = dateStr,
+                        hasDiary = false,
+                        diaryId = (long?)null,
+                        previewText = (string?)null,
+                        moodId = (string?)null,
+                        moodEmoji = (string?)null
+                    });
+                }
+            }
+
+            return Ok(result);
+        }
+
         [HttpGet("today-summary")]
         public IActionResult TodaySummary([FromQuery] int? userId)
         {
