@@ -25,13 +25,47 @@
             @* <button type="button" class="action-btn" aria-label="通知">🔔</button> *@
             @* <button type="button" class="action-btn" aria-label="個人資料">👤</button> *@
 
-            @* 登出 *@
-            <a asp-controller="FrontPage" asp-action="Profile" class="top-icon-btn" aria-label="個人資料">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-            </a>
+            
+            @* 帳戶選單（下拉式）*@
+            <div class="account-menu-wrapper" style="position: relative;">
+                <button id="accountMenuBtn" class="top-icon-btn" type="button" aria-label="帳戶選單">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </button>
+                <div id="accountMenu" class="account-menu"
+                     style="display:none; position:absolute; top:50px; right:0; width:180px;
+                    background:white; border:1px solid #000; border-radius:12px;
+                    box-shadow:0 4px 12px rgba(0,0,0,.1); z-index:50000; overflow:hidden;">
+                    <a href="/FrontPage/Profile"
+                           style="display:block; padding:10px 16px; color:#555; text-decoration:none; font-size:14px;">
+                        帳戶
+                    </a>
+                    <a href="/FrontPage/Profile"
+                           style="display:block; padding:10px 16px; color:#555; text-decoration:none; font-size:14px;">
+                        系統設定
+                    </a>
+                    <hr style="margin:0; border:none; border-top:1px solid #eee;">
+                    <a href="javascript:logoutAndGoWelcome()"
+                           style="display:block; padding:10px 16px; color:#dc2626; text-decoration:none; font-size:14px;">
+                        登出
+                    </a>
+                </div>
+            </div>
+
+            <script>
+                // 下拉選單開關
+                document.getElementById('accountMenuBtn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const menu = document.getElementById('accountMenu');
+                    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+                });
+                // 點外面關閉
+                document.addEventListener('click', function() {
+                    document.getElementById('accountMenu').style.display = 'none';
+                });
+            </script>
         </div>
     </header>
 

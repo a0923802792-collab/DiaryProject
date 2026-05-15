@@ -47,7 +47,7 @@ namespace DiaryProject.Controllers
         }
 
         // =====================================================
-        // 2026-05-04
+        // 2026-05-14
         // 新增：取得指定年月每一天的日記狀態（給首頁星球渲染用）
         // GET /api/diary/month-status?year=2026&month=5
         // =====================================================
@@ -129,6 +129,37 @@ namespace DiaryProject.Controllers
             }
 
             return Ok(result);
+        }
+
+        // =====================================================
+        // 新增：取得指定日記的第一張照片預覽
+        // GET /api/media/preview?diaryId=123
+        // =====================================================
+        [HttpGet("~/api/media/preview")] // 使用 ~/ 可以覆寫 Controller 預設的路由前綴
+        public IActionResult GetPhotoPreview([FromQuery] long diaryId)
+        {
+            // Step 1: 驗證是否有登入 (防護機制)
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue || userId.Value <= 0)
+            {
+                return Unauthorized(new { message = "尚未登入" });
+            }
+
+            // Step 2: 從 Media 資料庫尋找符合條件的照片
+            var firstImage = _context.DiaryMedia
+                .AsNoTracking()
+                .Where(m => m.DiaryId == diaryId && m.MediaType == "image") // 條件：同ID 且是圖片
+                .OrderBy(m => m.CreatedAt) // 依照上傳時間排序
+                .FirstOrDefault(); // 只拿第一筆 (最早的一張)
+
+            // Step 3: 如果沒找到照片，回傳 null 網址
+            if (firstImage == null)
+            {
+                return Ok(new { fileUrl = (string)null });
+            }
+
+            // Step 4: 找到的話，回傳照片的路徑
+            return Ok(new { fileUrl = firstImage.FileUrl });
         }
 
         [HttpGet("today-summary")]

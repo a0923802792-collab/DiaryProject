@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 65">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #c49a6c;
+        stroke-miterlimit: 10;
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <circle class="cls-1" cx="31.96" cy="32.62" r="16.83" transform="translate(-10.2 50.18) rotate(-68.2)"/>
+  <line class="cls-1" x1="31.96" y1="52.62" x2="31.96" y2="63.62"/>
+  <line class="cls-1" x1="31.96" y1="1.62" x2="31.96" y2="12.62"/>
+  <line class="cls-1" x1="11.96" y1="32.62" x2=".96" y2="32.62"/>
+  <line class="cls-1" x1="62.96" y1="32.62" x2="51.96" y2="32.62"/>
+  <line class="cls-1" x1="17.55" y1="47.03" x2="10.04" y2="54.55"/>
+  <line class="cls-1" x1="53.88" y1="10.7" x2="46.36" y2="18.22"/>
+  <line class="cls-1" x1="46.36" y1="47.03" x2="53.88" y2="54.55"/>
+  <line class="cls-1" x1="10.04" y1="10.7" x2="17.55" y2="18.22"/>
+</svg>
