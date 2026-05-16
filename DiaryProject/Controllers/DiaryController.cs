@@ -1074,8 +1074,8 @@ namespace DiaryProject.Controllers
             {
                 "like" => "👍",
                 "love" => "❤️",
-                "hug" => "🫂",
-                "empathy" => "💬",
+                "hug" => "🤗",
+                "empathy" => "🥺",
                 "cheer" => "👏",
                 _ => string.IsNullOrWhiteSpace(reactionType) ? "?" : reactionType!
             };
