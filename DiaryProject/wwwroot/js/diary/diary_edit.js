@@ -14,8 +14,12 @@ let shareType = 'private';
 let pendingDeleteAction = null;
 const deletedCustomTags = new Set();
 const MAX_MEDIA_COUNT = 10;
-const STORAGE_SOFT_LIMIT_BYTES = 4_200_000;
-const STORAGE_HARD_LIMIT_BYTES = 4_700_000;
+// 2026-05-16
+// 後端 Program.cs 已把 FormOptions.ValueLengthLimit 拉到 50 MB；
+// 這裡的前端門檻設成稍低一點，預留 URL-encoding 膨脹空間（base64 中的 +/= 會被編碼增大），
+// 並且把目前 mediaItems 已佔用的大小一起算進去，避免出現「前端放行、後端炸掉」的情況。
+const STORAGE_SOFT_LIMIT_BYTES = 30_000_000;   // 30 MB 起警告
+const STORAGE_HARD_LIMIT_BYTES = 40_000_000;   // 40 MB 直接擋下
 
 /* ============================================================
    媒體資料與容量檢查
@@ -60,9 +64,18 @@ function estimateFileDataUrlBytes(file) {
     return Math.ceil((rawSize * 4) / 3) + 256;
 }
 
+// 2026-05-16
+// 修正：原本只回傳 extraBytes，沒有把現有 mediaItems 的累計大小算進去，
+// 導致使用者連續上傳多張小圖時前端不會擋，最後在後端撞牆 (Form value length limit exceeded)。
+// 這裡改成「現有 base64 字元數 × 2（估算 UTF-16 byte）+ 即將新增的位元組」。
+function getCurrentMediaBytes() {
+    return mediaItems.reduce((sum, item) => sum + estimateDataUrlBytes(item?.src), 0);
+}
+
 function getStorageProjection(extraBytes) {
     const added = Math.max(0, Number(extraBytes) || 0);
-    return { projected: added };
+    const projected = getCurrentMediaBytes() + added;
+    return { projected };
 }
 
 function setMediaWarningText(message, level = 'warning') {
