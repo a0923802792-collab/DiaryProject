@@ -12,10 +12,12 @@ namespace DiaryProject.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _db;
+        private readonly IConfiguration _config;
 
-        public UserController(AppDbContext db)
+        public UserController(AppDbContext db, IConfiguration config)
         {
             _db = db;
+            _config = config;
         }
         [HttpGet("me")]
         public IActionResult Me()
@@ -221,8 +223,9 @@ namespace DiaryProject.Controllers
 
             try
             {
-                string systemEmail = "sepu5ma836@gmail.com";
-                string systemAppPassword = "yczbvwptiojolkwm";
+                // 2026-05-17
+                string systemEmail = _config["EmailSettings:SystemEmail"];
+                string systemAppPassword = _config["EmailSettings:AppPassword"];
 
                 MailMessage mail = new MailMessage();
                 mail.From = new MailAddress(systemEmail, "Moody 行動中心");

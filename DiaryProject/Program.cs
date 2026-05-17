@@ -5,6 +5,8 @@ using DiaryProject.Services.Review;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC + API Controllers
@@ -69,6 +71,8 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+
+
 
 // HTTP pipeline
 if (!app.Environment.IsDevelopment())
