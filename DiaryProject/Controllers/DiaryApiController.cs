@@ -75,7 +75,8 @@ namespace DiaryProject.Controllers
             //         按 CreatedAt 排序，方便等下取「最早那篇」
             var diaries = _context.Diaries
                 .AsNoTracking()
-                .Include(d => d.Moods)                               // 連帶把心情資料載入（不用第二次查詢）
+                .Include(d => d.Moods)                               // 連帶把心情資料載入（不用二次查詢）
+                .Include(d => d.DiaryNormal)
                 .Where(d => d.UserId == userId.Value
                          && d.Status == "published"
                          && d.DiaryDate >= startDate
@@ -110,7 +111,12 @@ namespace DiaryProject.Controllers
                         diaryId = (long?)diary.DiaryId,
                         previewText = diary.PreviewText,
                         moodId = firstMood?.MoodId,
-                        moodEmoji = firstMood?.MoodEmoji
+                        moodEmoji = firstMood?.MoodEmoji,
+                        title = diary.TemplateType == "normal"
+                                ? (string.IsNullOrWhiteSpace(diary.DiaryNormal?.Title)
+                                ? "未命名日記"
+                                : diary.DiaryNormal!.Title!)
+                                : ($"{firstMood?.MoodEmoji ?? "💭"} 心情日記")     // 心情日記用 emoji + 文字
                     });
                 }
                 else
@@ -148,14 +154,17 @@ namespace DiaryProject.Controllers
             // Step 2: 從 Media 資料庫尋找符合條件的照片
             var firstImage = _context.DiaryMedia
                 .AsNoTracking()
-                .Where(m => m.DiaryId == diaryId && m.MediaType == "image") // 條件：同ID 且是圖片
+                .Include(m => m.Diary)
+                .Where(m => m.DiaryId == diaryId 
+                    && (m.MediaType == "image" || m.MediaType == "drawing")
+                    && m.Diary.Status == "published")
                 .OrderBy(m => m.CreatedAt) // 依照上傳時間排序
-                .FirstOrDefault(); // 只拿第一筆 (最早的一張)
+                .FirstOrDefault();         // 只拿第一筆 (最早的一張)
 
             // Step 3: 如果沒找到照片，回傳 null 網址
             if (firstImage == null)
             {
-                return Ok(new { fileUrl = (string)null });
+                return Ok(new { fileUrl = (string?)null });  
             }
 
             // Step 4: 找到的話，回傳照片的路徑
@@ -179,9 +188,11 @@ namespace DiaryProject.Controllers
                 .AsNoTracking()
                 .Include(d => d.Tags)
                 .Include(d => d.DiaryMood)
-                .FirstOrDefault(d => d.UserId == finalUserId.Value
+                .Where(d => d.UserId == finalUserId.Value
                     && d.Status == "published"
-                    && d.DiaryDate == today);
+                    && d.DiaryDate == today)
+                .OrderByDescending(d => d.CreatedAt)
+                .FirstOrDefault();
 
             if (diary == null)
             {
