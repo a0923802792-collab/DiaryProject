@@ -273,6 +273,30 @@ a {
     padding-right: 0.25rem;
 }
 
+/* 2026-05-17 新增：給需要滿版的頁面用 */
+.page-shell.page-shell--fullbleed {
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+/* 全站統一 scrollbar 樣式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--mo-cream);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--mo-brown);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--mo-olive);
+}
+
 /*=============================================*/
 .side-nav {
     display: flex;

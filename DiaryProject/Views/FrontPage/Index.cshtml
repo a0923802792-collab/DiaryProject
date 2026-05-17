@@ -3,7 +3,6 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/entry/assets/entry.css" />
     <link rel="stylesheet" href="~/entry/assets/src.css" />
     <style>
         /* 強制讓首頁背景有格紋 */
@@ -19,6 +18,9 @@
         #front-home-root,
         #front-home-root > div {
             background: transparent !important;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
     </style>
 }
@@ -29,4 +31,8 @@
 
 @section Scripts {
     <script type="module" src="~/entry/assets/fronthome.js"></script>
+    <script>
+        /* 動態給 .page-shell 加 class */
+        document.querySelector('.page-shell')?.classList.add('page-shell--fullbleed');
+    </script>
 }
