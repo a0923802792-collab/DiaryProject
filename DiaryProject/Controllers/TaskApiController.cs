@@ -33,7 +33,8 @@ namespace DiaryProject.Controllers
                         taskId = t.TaskId,
                         title = t.Title,
                         rhythmType = t.RhythmType,
-                        status = t.Status
+                        status = t.Status,
+                        isCompletedToday = t.IsCompletedToday   // 2026-05-18 新增完成任務時於首頁顯示功能
                     })
                     .ToList();
 
