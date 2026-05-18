@@ -105,7 +105,7 @@ namespace DiaryProject.Data
             // =========================
             modelBuilder.Entity<Notification>(entity =>
             {
-                entity.ToTable("Notification");
+                entity.ToTable("Notifications");
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.Id).HasColumnName("Id");

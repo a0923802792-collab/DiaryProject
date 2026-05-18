@@ -361,3 +361,32 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# .NET 建置產物
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+# Visual Studio
+.vs/
+.vscode/
+
+# 個人密鑰設定
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+!appsettings.json
+
+# 環境變數
+.env
+.env.local
+
+# 日誌
+*.log
+logs/
+
+# 系統垃圾
+.DS_Store
+Thumbs.db

@@ -3,8 +3,7 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/entry/assets/entry-DPPRDQxa.css" />
-    <link rel="stylesheet" href="~/entry/assets/src-DxhKVENg.css" />
+    <link rel="stylesheet" href="~/entry/assets/src.css" />
     <style>
         /* 強制讓首頁背景有格紋 */
         body {
@@ -19,6 +18,9 @@
         #front-home-root,
         #front-home-root > div {
             background: transparent !important;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
     </style>
 }
@@ -28,5 +30,9 @@
 </div>
 
 @section Scripts {
-    <script type="module" src="~/entry/assets/fronthome-lYz7fBEK.js"></script>
+    <script type="module" src="~/entry/assets/fronthome.js"></script>
+    <script>
+        /* 動態給 .page-shell 加 class */
+        document.querySelector('.page-shell')?.classList.add('page-shell--fullbleed');
+    </script>
 }
