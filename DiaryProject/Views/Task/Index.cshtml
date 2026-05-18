@@ -77,9 +77,26 @@
 								<article class="task-card task-card-clickable" data-task-id="@item.TaskId">
 									<h4>@item.Title</h4>
 									<p>節奏：@item.RhythmTypeText</p>
+								@if (item.RhythmType == "Daily")
+								{
 									<p>@(item.IsCompletedToday ? "今天已記錄。" : "今天尚未記錄。")</p>
+								}
+								else if (item.IsWeeklyGoalReached)
+								{
+									<p>本週已達目標次數。</p>
+								}
+								else if (item.WeeklyTargetCount.HasValue && item.WeeklyTargetCount.Value > 0)
+								{
+									<p>本週 @item.ThisWeekCompletedCount / @item.WeeklyTargetCount.Value 次</p>
+								}
+								else
+								{
+									<p>@(item.IsCompletedToday ? "今天已記錄。" : "今天尚未記錄。")</p>
+								}
 
-									<div class="card-actions">
+								<div class="card-actions">
+									@if (item.RhythmType == "Daily")
+									{
 										@if (item.IsCompletedToday)
 										{
 											<button type="button" class="btn btn-ghost" disabled>今天已記錄</button>
@@ -94,7 +111,29 @@
 												<button type="submit" class="btn btn-primary">完成這一步</button>
 											</form>
 										}
-									</div>
+									}
+									else
+									{
+										@if (item.IsWeeklyGoalReached)
+										{
+											<button type="button" class="btn btn-ghost" disabled>本週已達標</button>
+										}
+										else if (item.IsCompletedToday)
+										{
+											<button type="button" class="btn btn-ghost" disabled>今天已記錄</button>
+										}
+										else
+										{
+											<form asp-action="Checkin" method="post" style="display:inline;">
+												@Html.AntiForgeryToken()
+												<input type="hidden" name="TaskId" value="@item.TaskId" />
+												<input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+												<input type="hidden" name="CheckinType" value="Complete" />
+												<button type="submit" class="btn btn-primary">完成這一步</button>
+											</form>
+										}
+									}
+								</div>
 								</article>
 							}
 						}
@@ -114,24 +153,39 @@
 								<article class="task-card task-card-clickable" data-task-id="@item.TaskId">
 									<h4>@item.Title</h4>
 									<p>節奏：@item.RhythmTypeText</p>
+								@if (item.IsWeeklyGoalReached)
+								{
+									<p>本週已達目標次數。</p>
+								}
+								else if (item.WeeklyTargetCount.HasValue && item.WeeklyTargetCount.Value > 0)
+								{
+									<p>本週 @item.ThisWeekCompletedCount / @item.WeeklyTargetCount.Value 次</p>
+								}
+								else
+								{
 									<p>@(item.IsCompletedToday ? "今天已記錄。" : "今天尚未記錄。")</p>
+								}
 
-									<div class="card-actions">
-										@if (item.IsCompletedToday)
-										{
-											<button type="button" class="btn btn-ghost" disabled>今天已記錄</button>
-										}
-										else
-										{
-											<form asp-action="Checkin" method="post" style="display:inline;">
-												@Html.AntiForgeryToken()
-												<input type="hidden" name="TaskId" value="@item.TaskId" />
-												<input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
-												<input type="hidden" name="CheckinType" value="Complete" />
-												<button type="submit" class="btn btn-primary">記錄一次</button>
-											</form>
-										}
-									</div>
+								<div class="card-actions">
+									@if (item.IsWeeklyGoalReached)
+									{
+										<button type="button" class="btn btn-ghost" disabled>本週已達標</button>
+									}
+									else if (item.IsCompletedToday)
+									{
+										<button type="button" class="btn btn-ghost" disabled>今天已記錄</button>
+									}
+									else
+									{
+										<form asp-action="Checkin" method="post" style="display:inline;">
+											@Html.AntiForgeryToken()
+											<input type="hidden" name="TaskId" value="@item.TaskId" />
+											<input type="hidden" name="CheckinDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+											<input type="hidden" name="CheckinType" value="Complete" />
+											<button type="submit" class="btn btn-primary">記錄一次</button>
+										</form>
+									}
+								</div>
 								</article>
 							}
 						}

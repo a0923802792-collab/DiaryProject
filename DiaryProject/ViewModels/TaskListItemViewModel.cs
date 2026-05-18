@@ -15,5 +15,9 @@ namespace DiaryProject.ViewModels
 
         public string RhythmTypeText { get; set; } = string.Empty;
         public string StatusText { get; set; }=string.Empty;
+
+        public int? WeeklyTargetCount { get; set; }
+        public int ThisWeekCompletedCount { get; set; }
+        public bool IsWeeklyGoalReached { get; set; }
     }
 }

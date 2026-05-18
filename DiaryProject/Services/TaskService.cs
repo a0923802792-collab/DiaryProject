@@ -16,7 +16,11 @@ namespace DiaryProject.Services
         {
             DateTime today = DateTime.Today;
 
-            // 使用者任務清單，包含是否已完成今日打卡
+            // 以週一為一週開始
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            DateTime weekStart = today.AddDays(-diff).Date;
+            DateTime weekEnd = weekStart.AddDays(7);
+
             var list = _context.Tasks
                 .Where(x => x.UserId == userId && x.Status == "Active")
                 .Select(x => new TaskListItemViewModel
@@ -25,14 +29,33 @@ namespace DiaryProject.Services
                     Title = x.Title,
                     RhythmType = x.RhythmType,
                     Status = x.Status,
+
                     IsCompletedToday = _context.TaskChecking
                         .Any(c => c.TaskId == x.TaskId && c.CheckingDate == today),
 
+                    WeeklyTargetCount = _context.TaskScheduleRules
+                        .Where(r => r.TaskId == x.TaskId)
+                        .Select(r => r.WeeklyTargetCount)
+                        .FirstOrDefault(),
+
+                    ThisWeekCompletedCount = _context.TaskChecking
+                        .Count(c => c.TaskId == x.TaskId
+                                 && c.CheckingDate >= weekStart
+                                 && c.CheckingDate < weekEnd),
+
                     RhythmTypeText = x.RhythmType == "Daily" ? "每日" : "非每日",
                     StatusText = x.Status == "Active" ? "進行中" : "已封存"
-
                 })
                 .ToList();
+
+            foreach (var item in list)
+            {
+                item.IsWeeklyGoalReached =
+                    item.RhythmType != "Daily"
+                    && item.WeeklyTargetCount.HasValue
+                    && item.WeeklyTargetCount.Value > 0
+                    && item.ThisWeekCompletedCount >= item.WeeklyTargetCount.Value;
+            }
 
             return list;
         }
